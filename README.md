@@ -1,8 +1,8 @@
 # Jabuticaba
 
-Agente de IA que faz a triagem e o pré-agendamento de consultas de uma clínica, conversando por chat (WhatsApp) e marcando no Google Agenda.
+Agente de IA que atende as clientes de um salão de beleza por chat (WhatsApp), indica o serviço certo e marca o horário no Google Agenda.
 
-Trabalho de ACSO (Sistemas Autônomos, FAETEC), tema **"Criando um agente autônomo de IA"**. Entrega até **24/10**, grupo de até 4 alunos. Tema escolhido do roteiro do professor: **Tema 3, Agente de Triagem e Pré-Agendamento de Consultas** (é o mesmo do "Agente de Agendamento por WhatsApp" da lista individual).
+Trabalho de ACSO (Sistemas Autônomos, FAETEC), tema **"Criando um agente autônomo de IA"**. Entrega até **24/10**, grupo de até 4 alunos. Tema escolhido do roteiro do professor: **Agente de Agendamento por WhatsApp**, com a triagem e o pré-agendamento do Tema 3 aplicados a um salão de beleza fictício, o Salão Jabuticaba.
 
 ## O que o professor pede
 
@@ -25,23 +25,22 @@ Trabalho de ACSO (Sistemas Autônomos, FAETEC), tema **"Criando um agente autôn
 
 ## O que o agente faz
 
-1. O paciente escreve no chat: "estou com dor no peito quando corro, queria marcar uma consulta".
-2. O agente pergunta o motivo e faz a triagem: Clínico Geral, Cardiologista ou Dermatologista.
-3. Ele consulta os horários livres da semana no Google Agenda e oferece opções.
-4. Quando o paciente confirma, ele cria o evento e o Google envia o convite por e-mail para o paciente e para a clínica.
-5. Se for urgência (ex.: dor forte no peito agora), ele não agenda e orienta procurar o pronto-socorro.
+1. A cliente escreve no chat: "quero cobrir meus fios brancos, tem horário sábado?".
+2. O agente faz a triagem: entende que é Coloração, com a Juliana, 2 horas, R$ 180.
+3. Se for a primeira química, ele avisa do teste de alergia 48 horas antes.
+4. Ele consulta os horários livres da semana no Google Agenda e oferece opções que caibam na duração do serviço.
+5. Quando a cliente confirma, ele cria o evento e o Google envia o convite por e-mail.
 
 ## Arquitetura
 
 ```mermaid
 flowchart LR
-    U[Paciente<br/>Chat / WhatsApp] --> N[n8n<br/>AI Agent]
+    U[Cliente<br/>Chat / WhatsApp] --> N[n8n<br/>AI Agent]
     N --> L[Cérebro<br/>DeepSeek]
     L --> D{Tomada de decisão}
-    D -- dúvida sobre a clínica --> K[Base de conhecimento<br/>dados/clinica.md]
+    D -- dúvida ou triagem --> K[Base de conhecimento<br/>dados/salao.md]
     D -- ver horários --> G1[Google Agenda<br/>horários livres]
     D -- confirmar --> G2[Google Agenda<br/>criar evento + convite]
-    D -- urgência --> P[Orienta pronto-socorro]
     N --> U
 ```
 
@@ -49,13 +48,13 @@ flowchart LR
 |---|---|---|
 | **n8n** | Monta o agente arrastando blocos (low-code) | Grátis (self-hosted) |
 | **DeepSeek** | O cérebro: entende a mensagem e decide qual ferramenta usar | Centavos |
-| **Google Agenda** | Ver horários livres e criar a consulta com convite por e-mail | Grátis |
+| **Google Agenda** | Ver horários livres e criar o atendimento com convite por e-mail | Grátis |
 | **Evolution API** | Liga um número de WhatsApp ao n8n | Grátis (opcional, ver abaixo) |
 | **Docker** | Roda o n8n (e a Evolution) no PC com um comando | Grátis |
 
 ## Plano para os 3 dias
 
-O próprio Tema 3 diz "simulando um chat de WhatsApp". Por isso o plano usa primeiro o **chat do próprio n8n**, que já funciona sem configurar nada. O WhatsApp de verdade fica como bônus se sobrar tempo.
+O Tema 3 do professor aceita "simular um chat de WhatsApp". Por isso o plano usa primeiro o **chat do próprio n8n**, que já funciona sem configurar nada. O WhatsApp de verdade fica como bônus se sobrar tempo.
 
 ### Dia 1 (21–22/10): agente conversando
 1. Instalar o Docker Desktop e subir o n8n: `docker run -it --rm -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n` e abrir `http://localhost:5678`.
@@ -67,9 +66,9 @@ O próprio Tema 3 diz "simulando um chat de WhatsApp". Por isso o plano usa prim
 **Aprende:** o que é LLM, prompt, token, memória e por que a IA "alucina".
 
 ### Dia 2 (22–23/10): ferramentas
-1. Criar uma agenda "Clínica Jabuticaba" no Google Agenda e ligar a conta Google no n8n.
-2. Adicionar no AI Agent duas ferramentas **Google Calendar Tool**: uma para ver eventos da semana (horários ocupados) e outra para criar evento com o e-mail do paciente como convidado.
-3. Criar um Google Docs com o texto de [dados/clinica.md](dados/clinica.md) e adicionar a ferramenta **Google Docs Tool** para ler esse documento (é a nossa base de conhecimento, um RAG simplificado).
+1. Criar uma agenda "Salão Jabuticaba" no Google Agenda e ligar a conta Google no n8n.
+2. Adicionar no AI Agent duas ferramentas **Google Calendar Tool**: uma para ver eventos da semana (horários ocupados) e outra para criar evento com o e-mail da cliente como convidada.
+3. Criar um Google Docs com o texto de [dados/salao.md](dados/salao.md) e adicionar a ferramenta **Google Docs Tool** para ler esse documento (é a nossa base de conhecimento, um RAG simplificado).
 4. Testar os casos da tabela em [docs/relatorio.md](docs/relatorio.md#7-camada-de-avaliação) e anotar os resultados.
 
 **Aprende:** a diferença entre chatbot e agente: o agente decide sozinho quando usar cada ferramenta.
@@ -84,9 +83,9 @@ Subir a Evolution API, ler o QR Code com um chip de teste, apontar o webhook par
 
 ## Pensando em produto (depois do trabalho)
 
-A mesma base serve para vender um "atendente automático" para clínicas, barbearias e escritórios: um número de WhatsApp, uma agenda e uma base de conhecimento por cliente, rodando em um servidor barato.
+A mesma base serve para vender um "atendente automático" para salões, barbearias, estúdios de unha e clínicas de estética: um número de WhatsApp, uma agenda e uma base de conhecimento por cliente, rodando em um servidor barato.
 
 ## Cuidados
 
 - Nunca suba chaves de API para o GitHub.
-- Não use dados reais de pacientes nos testes.
+- Não use dados reais de clientes nos testes.

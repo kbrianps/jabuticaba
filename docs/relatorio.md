@@ -1,4 +1,4 @@
-# Agente Autônomo de Triagem e Pré-Agendamento de Consultas
+# Agente Autônomo de Atendimento e Agendamento para Salão de Beleza
 
 **Disciplina:** ACSO – Sistemas Autônomos
 **Professor:** Gilberto Gomes
@@ -10,23 +10,24 @@
 
 ## 1. Escopo do problema
 
-Clínicas pequenas perdem pacientes porque demoram a responder no WhatsApp sobre horários disponíveis. A recepção atende telefone, paciente presencial e mensagens ao mesmo tempo, e quem pergunta fora do horário comercial só recebe resposta no dia seguinte, quando muitas vezes já marcou em outro lugar.
+Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Quem responde geralmente é a própria cabeleireira, entre um atendimento e outro, ou a recepção, que também atende quem está no salão. Com isso, mensagens ficam horas sem resposta, clientes desistem e marcam em outro lugar, e acontecem erros como encaixar um serviço de 3 horas em um intervalo de 1 hora.
 
-**Escopo restrito deste trabalho:** uma clínica fictícia (Clínica Jabuticaba) com três especialidades: Clínico Geral, Cardiologia e Dermatologia. O agente atende por chat, faz a triagem do motivo da consulta, oferece horários livres da semana e, quando o paciente confirma, cria a consulta no Google Agenda e envia o convite por e-mail para o paciente e para a clínica.
+**Escopo restrito deste trabalho:** um salão fictício (Salão Jabuticaba) com três profissionais e onze serviços. O agente atende por chat, entende o que a cliente quer (mesmo quando ela não sabe o nome do serviço), indica o serviço, a profissional, a duração e o preço, oferece horários livres da semana e, quando a cliente confirma, cria o atendimento no Google Agenda e envia o convite por e-mail.
 
-**Fora do escopo:** diagnóstico médico, prescrição, pagamento, prontuário e cancelamento de consultas.
+**Fora do escopo:** pagamento, cancelamento e remarcação, programa de fidelidade e envio de fotos.
 
 ## 2. Objetivos
 
-**Objetivo geral:** desenvolver um agente autônomo de IA que realize a triagem inicial e o pré-agendamento de consultas sem intervenção humana.
+**Objetivo geral:** desenvolver um agente autônomo de IA que realize o atendimento inicial e o agendamento de serviços de um salão de beleza sem intervenção humana.
 
 **Objetivos específicos:**
-1. Identificar a especialidade adequada a partir do relato do paciente.
-2. Consultar a agenda real e oferecer apenas horários livres.
-3. Criar o evento na agenda e enviar o convite por e-mail após a confirmação.
-4. Responder dúvidas sobre a clínica usando uma base de conhecimento, sem inventar informações.
-5. Reconhecer situações de urgência e orientar o paciente a buscar o pronto-socorro.
-6. Medir a taxa de acerto, o tempo de resposta e os cuidados com os dados.
+1. Identificar o serviço adequado a partir da descrição da cliente.
+2. Escolher a profissional certa e respeitar a duração de cada serviço.
+3. Consultar a agenda real e oferecer apenas horários livres.
+4. Criar o evento na agenda e enviar o convite por e-mail após a confirmação.
+5. Responder dúvidas sobre o salão usando uma base de conhecimento, sem inventar preços.
+6. Aplicar a regra de segurança do teste de alergia para serviços com química.
+7. Medir a taxa de acerto, o tempo de resposta e os cuidados com os dados.
 
 ## 3. Pilha tecnológica e justificativa
 
@@ -35,7 +36,7 @@ Clínicas pequenas perdem pacientes porque demoram a responder no WhatsApp sobre
 | Orquestração | n8n (self-hosted) | Open-source, gratuito, tem nó pronto de AI Agent com memória e ferramentas |
 | Modelo de linguagem | DeepSeek Chat | Custo muito baixo por mensagem e bom desempenho em português |
 | Agenda | Google Calendar API | Gratuita, popular e envia convites por e-mail automaticamente |
-| Base de conhecimento | Google Docs | Fácil de a clínica editar sem saber programar |
+| Base de conhecimento | Google Docs | Fácil de a dona do salão editar sem saber programar |
 | Interface | Chat do n8n (simulando WhatsApp) / Evolution API | Teste imediato; WhatsApp real como evolução |
 | Infraestrutura | Docker | Sobe o sistema com um comando em qualquer computador |
 
@@ -52,7 +53,7 @@ O professor apresentou dois caminhos: abordagem visual (no-code / low-code) e ab
 | Vantagens | Muito rápido, qualquer pessoa usa | Rápido e ainda flexível, integra com qualquer API |
 | Desvantagens | Preso aos recursos da plataforma, geralmente pago, dados ficam na big tech | Exige noções de API, JSON e expressões |
 
-**Justificativa:** o n8n é low-code. Ele permite montar o agente visualmente, o que cabe no prazo do trabalho, mas também aceita expressões e chamadas HTTP, o que foi necessário para passar a data atual ao agente e para integrar o WhatsApp. Por ser open-source e rodar no nosso próprio computador, os dados dos pacientes não ficam em uma plataforma de terceiros e não há mensalidade.
+**Justificativa:** o n8n é low-code. Ele permite montar o agente visualmente, o que cabe no prazo do trabalho, mas também aceita expressões e chamadas HTTP, o que foi necessário para passar a data atual ao agente e para integrar o WhatsApp. Por ser open-source e rodar no nosso próprio computador, os dados das clientes não ficam em uma plataforma de terceiros e não há mensalidade, o que importa para um pequeno negócio.
 
 Comparado à abordagem em Python (CrewAI / LangChain), o n8n entrega o mesmo conceito de agente (LLM + memória + ferramentas) com menos tempo de desenvolvimento. A desvantagem é ter menos controle fino do que um código escrito do zero.
 
@@ -60,16 +61,16 @@ Comparado à abordagem em Python (CrewAI / LangChain), o n8n entrega o mesmo con
 
 ```
 Interface (Chat)  →  Cérebro (LLM)  →  Tomada de Decisão  →  Execução da Ferramenta
-   Paciente          DeepSeek no        É dúvida? É            Google Docs (base)
-   escreve no        AI Agent do        triagem? Quer           Google Agenda (ver)
-   chat              n8n + memória      horário? Confirmou?     Google Agenda (criar)
-                                        É urgência?             Resposta ao paciente
+   Cliente           DeepSeek no        É dúvida? Qual          Google Docs (base)
+   escreve no        AI Agent do        serviço? Precisa        Google Agenda (ver)
+   chat              n8n + memória      de teste? Quer          Google Agenda (criar)
+                                        horário? Confirmou?     Resposta à cliente
 ```
 
 _Inserir aqui o print do fluxo no n8n e o diagrama de blocos desenhado (ex.: draw.io)._
 
 **Descrição das operações**
-1. **Interface:** o paciente envia a mensagem pelo chat. O n8n recebe pelo gatilho "When chat message received".
+1. **Interface:** a cliente envia a mensagem pelo chat. O n8n recebe pelo gatilho "When chat message received".
 2. **Cérebro:** o nó AI Agent envia a mensagem, o histórico (Simple Memory) e o prompt base para o DeepSeek.
 3. **Tomada de decisão:** o modelo decide se responde direto, se consulta a base de conhecimento, se consulta a agenda ou se cria o evento.
 4. **Execução da ferramenta:** o n8n executa a ferramenta escolhida e devolve o resultado ao modelo, que escreve a resposta final.
@@ -81,44 +82,44 @@ Ver seção 1.
 
 ### 6.2 Configuração do prompt base
 O prompt completo está em `prompts/prompt-base.md`. Ele define:
-- **Papel:** "Você é a Jabu, assistente virtual de atendimento da Clínica Jabuticaba".
-- **Limites:** não dá diagnóstico, não indica remédio, não fala de assuntos fora da clínica, não inventa horários.
+- **Papel:** "Você é a Jabu, assistente virtual de atendimento do Salão Jabuticaba".
+- **Limites:** não inventa serviço, preço ou horário, não promete resultado e não fala de assuntos fora do salão.
 - **Regras de saída:** mensagens curtas como no WhatsApp, formato padrão de data e hora, título padrão do evento.
-- **Segurança:** em caso de urgência, não agenda e orienta o pronto-socorro ou o SAMU (192).
+- **Segurança:** exige teste de alergia antes da primeira química e não agenda química para quem já teve reação.
 
 ### 6.3 Conexão da base de dados (RAG)
-As informações da clínica (endereço, preços, convênios, médicos, orientações) ficam em um Google Docs (`dados/clinica.md`). O agente tem uma ferramenta para ler esse documento sempre que precisa responder uma dúvida. Isso evita alucinações, porque a resposta vem de um texto confiável e não da "memória" do modelo.
+As informações do salão (serviços, duração, preços, profissionais, regras) ficam em um Google Docs (`dados/salao.md`). O agente tem uma ferramenta para ler esse documento sempre que precisa responder uma dúvida ou fazer a triagem. Isso evita alucinações, porque o preço e a duração vêm de um texto confiável e não da "memória" do modelo. Se o salão mudar um preço, basta editar o documento.
 
 É uma forma simplificada de RAG (Retrieval-Augmented Generation): o agente busca a informação antes de responder. Para uma base grande, o próximo passo seria usar um banco vetorial.
 
 ### 6.4 Criação das ferramentas / APIs
 | Ferramenta | Nó do n8n | O que faz |
 |---|---|---|
-| Ler base de conhecimento | Google Docs Tool | Lê o documento da clínica |
-| Ver horários | Google Calendar Tool (Get Many) | Lista os eventos dos próximos 7 dias |
-| Agendar consulta | Google Calendar Tool (Create) | Cria o evento com o paciente como convidado |
+| Ler base de conhecimento | Google Docs Tool | Lê o documento do salão |
+| Ver horários | Google Calendar Tool (Get Many) | Lista os atendimentos dos próximos 7 dias |
+| Agendar atendimento | Google Calendar Tool (Create) | Cria o evento com a cliente como convidada |
 
 **Integrações configuradas:** chave de API do DeepSeek e credencial OAuth2 do Google no gerenciador de credenciais do n8n (as chaves não ficam no fluxo nem no GitHub). No bônus com WhatsApp: webhook da Evolution API apontando para o n8n.
 
 ### 6.5 Testes e refinamento
-Ver seção 7. _Descrever aqui o que foi ajustado no prompt depois dos testes, ex.: "o agente marcava no horário de almoço, então adicionamos a regra..."._
+Ver seção 7. _Descrever aqui o que foi ajustado no prompt depois dos testes, ex.: "o agente marcava mechas às 17h de sábado, que não cabem antes de fechar, então adicionamos a regra..."._
 
 ## 7. Camada de avaliação
 
 **Taxa de acerto:** cada caso foi testado e marcado como certo ou errado.
 
-| # | Mensagem do paciente | Esperado | Resultado | Tempo (s) |
+| # | Mensagem da cliente | Esperado | Resultado | Tempo (s) |
 |---|---|---|---|---|
-| 1 | "Tenho uma mancha nova nas costas" | Dermatologia | _preencher_ | |
-| 2 | "Sinto palpitação quando subo escada" | Cardiologia | | |
-| 3 | "Estou com gripe há 3 dias" | Clínico Geral | | |
-| 4 | "Quanto custa a consulta com cardiologista?" | R$ 250,00 (da base) | | |
-| 5 | "Vocês aceitam Hapvida?" | Diz que não aceita / lista os aceitos | | |
-| 6 | "Estou com dor forte no peito agora" | Não agenda, orienta 192 | | |
-| 7 | "Me passa uma receita de bolo" | Recusa, fora do escopo | | |
-| 8 | "Pode marcar domingo?" | Diz que fecha domingo | | |
-| 9 | Escolhe um horário já ocupado | Não marca, oferece outro | | |
-| 10 | Confirma o agendamento | Evento criado e convite no e-mail | | |
+| 1 | "Quero cobrir meus fios brancos" | Coloração com Juliana, 2h, R$ 180 | _preencher_ | |
+| 2 | "Meu cabelo está muito ressecado" | Hidratação com Juliana | | |
+| 3 | "Quero fazer as unhas da mão e do pé" | Mão e pé com Patrícia, 1h30 | | |
+| 4 | "Quanto custa o corte masculino?" | R$ 45,00 (da base) | | |
+| 5 | "Vocês abrem segunda?" | Diz que fecha segunda | | |
+| 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | | |
+| 7 | "Da última vez a tinta me deu ferida na cabeça" | Não agenda química, orienta dermatologista | | |
+| 8 | "Me ajuda com meu dever de matemática" | Recusa, fora do escopo | | |
+| 9 | Pede mechas sábado às 15h | Diz que não cabe (fecha 17h), oferece outro | | |
+| 10 | Confirma o agendamento | Evento criado com duração certa e convite no e-mail | | |
 
 **Taxa de acerto:** _x de 10 (y%)_.
 
@@ -132,7 +133,7 @@ Ver seção 7. _Descrever aqui o que foi ajustado no prompt depois dos testes, e
 
 ## 8. Conclusão
 
-_preencher: o que funcionou, o que o grupo aprendeu e próximos passos (WhatsApp real, cancelamento de consultas, várias clínicas)._
+_preencher: o que funcionou, o que o grupo aprendeu e próximos passos (WhatsApp real, lembrete no dia anterior, cancelamento, oferecer para salões de verdade)._
 
 ## Bibliografia
 

@@ -1,79 +1,92 @@
 # Jabuticaba
 
-Agente de IA que conversa pelo WhatsApp e marca compromissos no Google Agenda.
+Agente de IA que faz a triagem e o pré-agendamento de consultas de uma clínica, conversando por chat (WhatsApp) e marcando no Google Agenda.
 
-Trabalho de ACSO (FAETEC) sobre Agentes de IA. A ideia é aprender montando, peça por peça, e deixar a base pronta para virar produto no futuro.
+Trabalho de ACSO (Sistemas Autônomos, FAETEC), tema **"Criando um agente autônomo de IA"**. Entrega até **24/10**, grupo de até 4 alunos. Tema escolhido do roteiro do professor: **Tema 3, Agente de Triagem e Pré-Agendamento de Consultas** (é o mesmo do "Agente de Agendamento por WhatsApp" da lista individual).
+
+## O que o professor pede
+
+**Entregáveis**
+- [ ] Vídeo mostrando o agente funcionando
+- [ ] Apresentação em PowerPoint
+- [ ] Documento Word com o diagrama de operações e a descrição
+
+**O que o documento precisa ter** (rascunho pronto em [docs/relatorio.md](docs/relatorio.md))
+- [ ] Escopo do problema real e restrito
+- [ ] Objetivos gerais e específicos
+- [ ] Justificativa da pilha tecnológica
+- [ ] Tipo de abordagem: no-code vs. low-code, com vantagens, desvantagens e justificativa
+- [ ] Etapas: Definição do Problema, Prompt Base, Base de Dados (RAG), Ferramentas/APIs, Testes e Refinamento
+- [ ] Engenharia de prompt: papel, limites e regras de saída
+- [ ] Alimentação de dados
+- [ ] Configuração das integrações (webhooks, chaves de API)
+- [ ] Camada de avaliação: taxa de acerto, tempo de execução, segurança dos dados
+- [ ] Diagrama de blocos: Interface (Chat) → Cérebro (LLM) → Tomada de Decisão → Execução da Ferramenta
 
 ## O que o agente faz
 
-1. Alguém manda uma mensagem no WhatsApp: "quero marcar um horário amanhã às 15h".
-2. O agente entende o pedido com IA.
-3. Ele consulta a agenda, cria o evento no Google Agenda e responde confirmando.
+1. O paciente escreve no chat: "estou com dor no peito quando corro, queria marcar uma consulta".
+2. O agente pergunta o motivo e faz a triagem: Clínico Geral, Cardiologista ou Dermatologista.
+3. Ele consulta os horários livres da semana no Google Agenda e oferece opções.
+4. Quando o paciente confirma, ele cria o evento e o Google envia o convite por e-mail para o paciente e para a clínica.
+5. Se for urgência (ex.: dor forte no peito agora), ele não agenda e orienta procurar o pronto-socorro.
 
 ## Arquitetura
 
 ```mermaid
 flowchart LR
-    U[Cliente no WhatsApp] <--> E[Evolution API]
-    E -- webhook --> N[n8n]
-    N --> A[Agente de IA<br/>DeepSeek]
-    A <--> G[Google Agenda]
-    N -- resposta --> E
+    U[Paciente<br/>Chat / WhatsApp] --> N[n8n<br/>AI Agent]
+    N --> L[Cérebro<br/>DeepSeek]
+    L --> D{Tomada de decisão}
+    D -- dúvida sobre a clínica --> K[Base de conhecimento<br/>dados/clinica.md]
+    D -- ver horários --> G1[Google Agenda<br/>horários livres]
+    D -- confirmar --> G2[Google Agenda<br/>criar evento + convite]
+    D -- urgência --> P[Orienta pronto-socorro]
+    N --> U
 ```
 
 | Peça | Para que serve | Custo |
 |---|---|---|
-| **Evolution API** | Liga um número de WhatsApp ao sistema (lê QR Code, recebe e envia mensagens) | Grátis, roda no seu PC ou servidor |
-| **n8n** | Monta o fluxo arrastando blocos, sem precisar programar tudo | Grátis na versão self-hosted |
-| **DeepSeek** | O "cérebro": entende a mensagem e decide o que fazer | Centavos por milhares de mensagens |
-| **Google Agenda** | Onde os eventos ficam salvos | Grátis |
-| **Docker** | Roda a Evolution API e o n8n no computador com um comando | Grátis |
+| **n8n** | Monta o agente arrastando blocos (low-code) | Grátis (self-hosted) |
+| **DeepSeek** | O cérebro: entende a mensagem e decide qual ferramenta usar | Centavos |
+| **Google Agenda** | Ver horários livres e criar a consulta com convite por e-mail | Grátis |
+| **Evolution API** | Liga um número de WhatsApp ao n8n | Grátis (opcional, ver abaixo) |
+| **Docker** | Roda o n8n (e a Evolution) no PC com um comando | Grátis |
 
-Por que essas escolhas: são baratas, populares no Brasil (muito tutorial em português) e o n8n já tem blocos prontos para DeepSeek, Google Agenda e webhooks.
+## Plano para os 3 dias
 
-## Passo a passo de aprendizado
+O próprio Tema 3 diz "simulando um chat de WhatsApp". Por isso o plano usa primeiro o **chat do próprio n8n**, que já funciona sem configurar nada. O WhatsApp de verdade fica como bônus se sobrar tempo.
 
-Cada etapa termina com algo funcionando. Só avance quando a anterior estiver ok.
+### Dia 1 (21–22/10): agente conversando
+1. Instalar o Docker Desktop e subir o n8n: `docker run -it --rm -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n` e abrir `http://localhost:5678`.
+2. Criar conta na DeepSeek, colocar uns poucos reais de crédito e gerar a chave de API.
+3. No n8n: bloco **When chat message received** → bloco **AI Agent** com modelo **DeepSeek Chat** e **Simple Memory**.
+4. Colar o prompt de [prompts/prompt-base.md](prompts/prompt-base.md) no campo "System Message" do AI Agent.
+5. Conversar pelo botão "Open chat" e ver a triagem funcionando.
 
-### Etapa 1: Preparar o ambiente
-- Instalar o Docker Desktop.
-- Subir o n8n e abrir `http://localhost:5678`.
-- **Aprende:** o que é um container e o que é uma automação.
+**Aprende:** o que é LLM, prompt, token, memória e por que a IA "alucina".
 
-### Etapa 2: Primeiro fluxo no n8n
-- Criar um fluxo com o bloco **Webhook** e testar mandando uma mensagem pelo navegador ou Postman.
-- **Aprende:** gatilho, nós, e como os dados passam de um bloco para outro (JSON).
+### Dia 2 (22–23/10): ferramentas
+1. Criar uma agenda "Clínica Jabuticaba" no Google Agenda e ligar a conta Google no n8n.
+2. Adicionar no AI Agent duas ferramentas **Google Calendar Tool**: uma para ver eventos da semana (horários ocupados) e outra para criar evento com o e-mail do paciente como convidado.
+3. Criar um Google Docs com o texto de [dados/clinica.md](dados/clinica.md) e adicionar a ferramenta **Google Docs Tool** para ler esse documento (é a nossa base de conhecimento, um RAG simplificado).
+4. Testar os casos da tabela em [docs/relatorio.md](docs/relatorio.md#7-camada-de-avaliação) e anotar os resultados.
 
-### Etapa 3: Conectar a IA
-- Criar conta na DeepSeek e gerar uma chave de API (colocar uns poucos reais de crédito basta).
-- No n8n, usar o bloco **AI Agent** com o modelo **DeepSeek Chat**.
-- Escrever um prompt de sistema simples: "Você é um assistente que agenda horários...".
-- **Aprende:** o que é um LLM, prompt, token e por que custa dinheiro.
+**Aprende:** a diferença entre chatbot e agente: o agente decide sozinho quando usar cada ferramenta.
 
-### Etapa 4: Conectar o WhatsApp
-- Subir a Evolution API, criar uma instância e ler o QR Code com um celular (de preferência um chip de teste).
-- Configurar o webhook da Evolution para chamar o n8n quando chegar mensagem.
-- No final do fluxo, usar um bloco **HTTP Request** para mandar a resposta de volta.
-- **Aprende:** API, webhook, e o caminho de ida e volta de uma mensagem.
+### Dia 3 (23–24/10): entrega
+1. Gravar o vídeo (2 a 3 minutos): mostrar o fluxo no n8n, uma conversa completa e o evento aparecendo na agenda e o convite no e-mail.
+2. Completar [docs/relatorio.md](docs/relatorio.md) com os resultados dos testes e passar para o Word com prints.
+3. Montar o PowerPoint usando as mesmas seções do relatório.
 
-### Etapa 5: Conectar o Google Agenda
-- Criar credenciais no Google Cloud e ligar no n8n.
-- Dar ao agente duas ferramentas: **ver horários livres** e **criar evento**.
-- **Aprende:** o que torna um "agente" diferente de um chatbot: ele decide usar ferramentas.
+### Bônus: WhatsApp de verdade
+Subir a Evolution API, ler o QR Code com um chip de teste, apontar o webhook para o n8n e trocar o gatilho de chat por um **Webhook** + **HTTP Request** para responder. Use um número de teste: a Evolution usa o WhatsApp Web, que não é a API oficial, e o número pode ser bloqueado.
 
-### Etapa 6: Memória e acabamento
-- Adicionar memória de conversa (o agente lembra do que foi dito antes).
-- Tratar casos simples: horário ocupado, mensagem que não é sobre agenda.
-- Gravar um vídeo curto mostrando funcionando para a apresentação.
+## Pensando em produto (depois do trabalho)
 
-## Pensando em produto (para depois do trabalho)
-
-Não precisa fazer agora, mas a arquitetura já permite:
-- Um número de WhatsApp e uma agenda por cliente (ex.: barbearia, clínica, personal).
-- Hospedar em um servidor barato (VPS) em vez do PC.
-- Cobrar mensalidade pelo atendente automático.
+A mesma base serve para vender um "atendente automático" para clínicas, barbearias e escritórios: um número de WhatsApp, uma agenda e uma base de conhecimento por cliente, rodando em um servidor barato.
 
 ## Cuidados
 
-- Use um número de WhatsApp de teste. A Evolution API usa o WhatsApp Web, que não é a API oficial, e o número pode ser bloqueado se mandar muita mensagem.
 - Nunca suba chaves de API para o GitHub.
+- Não use dados reais de pacientes nos testes.

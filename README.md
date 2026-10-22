@@ -2,7 +2,7 @@
 
 Agente de IA que atende as clientes de um salão de beleza por chat (WhatsApp), indica o serviço certo e marca o horário no Google Agenda.
 
-Trabalho de ACSO (Sistemas Autônomos, FAETEC), tema **"Criando um agente autônomo de IA"**. Entrega até **24/10**, grupo de até 4 alunos. Tema escolhido do roteiro do professor: **Agente de Agendamento por WhatsApp**, com a triagem e o pré-agendamento do Tema 3 aplicados a um salão de beleza fictício, o Salão Jabuticaba.
+Trabalho de ACSO (Sistemas Autônomos, FAETEC de Quintino), tema **"Criando um agente autônomo de IA"**. Entrega até **24/10**, grupo de até 4 alunos. Tema escolhido do roteiro do professor: **Agente de Agendamento por WhatsApp**, com a triagem e o pré-agendamento do Tema 3 aplicados a um salão de beleza fictício, o Salão Jabuticaba.
 
 ## O que o professor pede
 

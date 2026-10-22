@@ -2,7 +2,7 @@
 
 **Disciplina:** ACSO – Sistemas Autônomos
 **Professor:** Gilberto Gomes
-**Instituição:** Centro Universitário São José / FAETEC – Tecnólogo em Sistemas de Informação
+**Instituição:** FAETEC de Quintino – Tecnólogo em Sistemas de Informação
 **Aluno:** Arthur André dos Santos Pravato
 **Turma:** 1212 (trabalho individual)
 **Data:** 24/10/2026

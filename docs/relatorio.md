@@ -11,7 +11,7 @@
 
 Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Quem responde geralmente é a própria cabeleireira, entre um atendimento e outro, ou a recepção, que também atende quem está no salão. Com isso, mensagens ficam horas sem resposta, clientes desistem e marcam em outro lugar, e acontecem erros como encaixar um serviço de 3 horas em um intervalo de 1 hora.
 
-**Escopo restrito deste trabalho:** um salão fictício (Salão Jabuticaba) com três profissionais e onze serviços. O agente atende por chat, entende o que a cliente quer (mesmo quando ela não sabe o nome do serviço), indica o serviço, a profissional, a duração e o preço, oferece horários livres da semana e, quando a cliente confirma, cria o atendimento no Google Agenda e envia o convite por e-mail.
+**Escopo restrito deste trabalho:** um salão fictício (Salão Jabuticaba) com três profissionais e doze serviços. O agente atende por chat, entende o que a cliente quer (mesmo quando ela não sabe o nome do serviço), indica o serviço, a profissional, a duração e o preço, oferece horários livres da semana e, quando a cliente confirma, cria o atendimento no Google Agenda e envia o convite por e-mail.
 
 **Fora do escopo:** pagamento, cancelamento e remarcação, programa de fidelidade e envio de fotos.
 

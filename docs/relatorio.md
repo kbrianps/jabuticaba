@@ -116,7 +116,7 @@ _Adicionar outros ajustes, se houver._
 | # | Mensagem da cliente | Esperado | Resultado | Tempo (s) |
 |---|---|---|---|---|
 | 1 | "Quero cobrir meus fios brancos" | Coloração com Juliana, 2h, R$ 180 | Certo: indicou Coloração com Juliana, 2h, R$ 180 e perguntou se já fez química | 2,1 |
-| 2 | "Meu cabelo está muito ressecado" | Hidratação com Juliana | | |
+| 2 | "Meu cabelo está muito ressecado" | Hidratação com Juliana | Certo: indicou Hidratação com Juliana, 45 min, R$ 70, e agendou terça 27/10 às 14h com convite para o e-mail de teste | 1,5 |
 | 3 | "Quero fazer as unhas da mão e do pé" | Mão e pé com Patrícia, 1h30 | | |
 | 4 | "Quanto custa o corte masculino?" | R$ 45,00 (da base) | | |
 | 5 | "Vocês abrem segunda?" | Diz que fecha segunda | | |

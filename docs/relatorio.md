@@ -3,10 +3,9 @@
 **Disciplina:** ACSO – Sistemas Autônomos
 **Professor:** Gilberto Gomes
 **Instituição:** Centro Universitário São José / FAETEC – Tecnólogo em Sistemas de Informação
-**Alunos:** _preencher_
+**Aluno:** Arthur André dos Santos Pravato
+**Turma:** 1212 (trabalho individual)
 **Data:** 24/10/2026
-
-> Rascunho base. Partes marcadas com _preencher_ dependem dos testes do grupo.
 
 ## 1. Escopo do problema
 
@@ -43,7 +42,7 @@ Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Q
 
 ## 4. Tipo de abordagem: visual (low-code)
 
-O professor apresentou dois caminhos: abordagem visual (no-code / low-code) e abordagem com código (Python com CrewAI ou LangChain). Escolhemos a **abordagem visual com low-code**.
+O professor apresentou dois caminhos: abordagem visual (no-code / low-code) e abordagem com código (Python com CrewAI ou LangChain). A escolhida foi a **abordagem visual com low-code**.
 
 **No-code vs. low-code**
 
@@ -67,8 +66,6 @@ Interface (Chat)  →  Cérebro (LLM)  →  Tomada de Decisão  →  Execução 
    chat              n8n + memória      de teste? Quer          Resposta à cliente
                      + Config           horário? Confirmou?
 ```
-
-_Inserir aqui o print do fluxo no n8n e o diagrama de blocos desenhado (ex.: draw.io)._
 
 **Descrição das operações**
 1. **Interface:** a cliente envia a mensagem pelo chat. O n8n recebe pelo gatilho "When chat message received".
@@ -123,14 +120,14 @@ Os testes da seção 7 foram feitos no chat do n8n e cada conversa foi conferida
 | 4 | "Quanto custa o corte masculino?" | R$ 45,00 (da base) | Certo: respondeu R$ 45, 30 min, com Rafael (quarta a sábado), e depois agendou sexta às 9h | 1,1 |
 | 5 | "Vocês abrem segunda?" | Diz que fecha segunda | Certo: informou o horário e que fecha domingo, segunda e feriados; quando o cliente insistiu em segunda, ofereceu terça | 1,4 |
 | 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | Certo: marcou o teste na sexta 9h e as mechas na terça 9h às 12h; recusou o horário das 14h, que já estava ocupado com a Juliana | 8,0 |
-| 7 | "Da última vez a tinta me deu ferida na cabeça" | Não agenda química, orienta dermatologista | Certo: com "já tive alergia", recusou coloração, indicou dermatologista e ofereceu hidratação, escova ou corte | 2,1 |
+| 7 | Cliente que quer coloração diz "Já tive alergia" | Não agenda química, orienta dermatologista | Certo: recusou coloração, indicou dermatologista e ofereceu hidratação, escova ou corte | 2,1 |
 | 8 | "Me ajuda com meu dever de matemática" | Recusa, fora do escopo | Certo: disse que só ajuda com agendamentos e informações do salão | 1,8 |
 | 9 | Pede mechas sábado às 15h | Diz que não cabe (fecha 17h), oferece outro | Certo: explicou que 3h a partir das 15h passaria das 17h e agendou sábado das 14h às 17h. Falha: uma das alternativas (terça 13h) se sobrepunha a outro atendimento da Juliana | 4,7 |
 | 10 | Confirma o agendamento | Evento criado com duração certa e convite no e-mail | Certo: criou "Hidratação - Juliana - Arthur" na sexta 23/10, 14h às 14h45, com o e-mail como convidado | 3,9 |
 
 **Taxa de acerto:** 10 de 10 (100%) no comportamento esperado de cada teste. Em um deles (teste 9), uma das três alternativas oferecidas tinha sobreposição de horário, o que levou ao segundo ajuste do prompt (seção 6.5).
 
-**Tempo de execução:** medido no histórico de execuções do n8n (aba "Executions"). Média: 3,1 segundos por resposta, variando de 1,1 s (pergunta simples, sem ferramenta) a 8,0 s (consulta à agenda e duas decisões na mesma resposta). Respostas que usam a agenda levam em média 5 s, as demais cerca de 1,7 s.
+**Tempo de execução:** medido no histórico de execuções do n8n (aba "Executions"). Média: 3,1 segundos por resposta, variando de 1,1 s (pergunta simples, sem ferramenta) a 8,0 s (consulta à agenda e duas decisões na mesma resposta). Respostas que consultam ou gravam na agenda levam em média 5,2 s; as demais, cerca de 1,7 s.
 
 **Segurança dos dados:**
 - Chaves de API guardadas no gerenciador de credenciais do n8n, fora do código.
@@ -140,7 +137,11 @@ Os testes da seção 7 foram feitos no chat do n8n e cada conversa foi conferida
 
 ## 8. Conclusão
 
-_preencher: o que funcionou, o que o grupo aprendeu e próximos passos (WhatsApp real, lembrete no dia anterior, cancelamento, oferecer para salões de verdade)._
+O agente cumpriu o objetivo: atendeu clientes por chat, entendeu pedidos escritos com as palavras do próprio cliente, indicou serviço, profissional, duração e preço, aplicou a regra de segurança da química e criou os atendimentos no Google Agenda com convite por e-mail. Nos 10 testes, acertou o comportamento esperado em todos, com tempo médio de 3,1 segundos por resposta.
+
+O principal aprendizado foi a diferença entre um chatbot e um agente: o agente decide sozinho quando consultar a agenda e quando criar o evento. Os testes também mostraram o limite do modelo de linguagem: ele conversa muito bem, mas pode errar contas de horário. Isso foi reduzido com engenharia de prompt e pode ser resolvido de vez calculando os horários livres por código.
+
+**Próximos passos:** conectar um número de WhatsApp real pela Evolution API, enviar lembrete no dia anterior, permitir cancelamento e remarcação e testar a solução com um salão de verdade. Como o fluxo é genérico, a mesma base pode atender barbearias, estúdios de unhas e clínicas de estética trocando apenas a configuração.
 
 ## Bibliografia
 

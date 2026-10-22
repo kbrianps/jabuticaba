@@ -117,7 +117,7 @@ _Adicionar outros ajustes, se houver._
 |---|---|---|---|---|
 | 1 | "Quero cobrir meus fios brancos" | Coloração com Juliana, 2h, R$ 180 | Certo: indicou Coloração com Juliana, 2h, R$ 180 e perguntou se já fez química | 2,1 |
 | 2 | "Meu cabelo está muito ressecado" | Hidratação com Juliana | Certo: indicou Hidratação com Juliana, 45 min, R$ 70, e agendou terça 27/10 às 14h com convite para o e-mail de teste | 1,5 |
-| 3 | "Quero fazer as unhas da mão e do pé" | Mão e pé com Patrícia, 1h30 | | |
+| 3 | "Quero fazer as unhas da mão e do pé" | Mão e pé com Patrícia, 1h30 | Certo: indicou Mão e pé com Patrícia, 1h30, R$ 65, e agendou 13h às 14h30, respeitando o almoço | 4,2 |
 | 4 | "Quanto custa o corte masculino?" | R$ 45,00 (da base) | | |
 | 5 | "Vocês abrem segunda?" | Diz que fecha segunda | | |
 | 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | | |

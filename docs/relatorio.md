@@ -103,7 +103,11 @@ Como a base de um pequeno negócio é curta, ela cabe inteira no prompt, que é 
 **Integrações configuradas:** chave de API do DeepSeek e credencial OAuth2 do Google no gerenciador de credenciais do n8n (as chaves não ficam no fluxo nem no GitHub). No bônus com WhatsApp: webhook da Evolution API apontando para o n8n.
 
 ### 6.5 Testes e refinamento
-Ver seção 7. _Descrever aqui o que foi ajustado no prompt depois dos testes, ex.: "o agente marcava mechas às 17h de sábado, que não cabem antes de fechar, então adicionamos a regra..."._
+Os testes da seção 7 foram feitos no chat do n8n e cada conversa foi conferida no histórico de execuções. Ajustes feitos no prompt a partir deles:
+
+1. **Horário sobreposto e vazamento de dados (22/10):** com uma coloração já marcada das 9h às 11h de sábado, o agente ofereceu outra coloração às 10h com a mesma profissional. Ele também mostrou ao cliente os agendamentos que já estavam na agenda e perguntou se eram dele. Correção: o prompt passou a explicar, com um exemplo, como conferir se o intervalo inteiro do serviço está livre, e ganhou uma regra de privacidade que proíbe citar agendamentos de outros clientes.
+
+_Adicionar outros ajustes, se houver._
 
 ## 7. Camada de avaliação
 

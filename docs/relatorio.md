@@ -119,8 +119,8 @@ _Adicionar outros ajustes, se houver._
 | 2 | "Meu cabelo está muito ressecado" | Hidratação com Juliana | Certo: indicou Hidratação com Juliana, 45 min, R$ 70, e agendou terça 27/10 às 14h com convite para o e-mail de teste | 1,5 |
 | 3 | "Quero fazer as unhas da mão e do pé" | Mão e pé com Patrícia, 1h30 | Certo: indicou Mão e pé com Patrícia, 1h30, R$ 65, e agendou 13h às 14h30, respeitando o almoço | 4,2 |
 | 4 | "Quanto custa o corte masculino?" | R$ 45,00 (da base) | Certo: respondeu R$ 45, 30 min, com Rafael (quarta a sábado), e depois agendou sexta às 9h | 1,1 |
-| 5 | "Vocês abrem segunda?" | Diz que fecha segunda | | |
-| 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | | |
+| 5 | "Vocês abrem segunda?" | Diz que fecha segunda | Certo: informou o horário e que fecha domingo, segunda e feriados; quando o cliente insistiu em segunda, ofereceu terça | 1,4 |
+| 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | Certo: marcou o teste na sexta 9h e as mechas na terça 9h às 12h; recusou o horário das 14h, que já estava ocupado com a Juliana | 8,0 |
 | 7 | "Da última vez a tinta me deu ferida na cabeça" | Não agenda química, orienta dermatologista | Certo: com "já tive alergia", recusou coloração, indicou dermatologista e ofereceu hidratação, escova ou corte | 2,1 |
 | 8 | "Me ajuda com meu dever de matemática" | Recusa, fora do escopo | | |
 | 9 | Pede mechas sábado às 15h | Diz que não cabe (fecha 17h), oferece outro | | |

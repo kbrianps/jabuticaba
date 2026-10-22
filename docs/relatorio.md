@@ -1,8 +1,8 @@
 # Agente Autônomo de Atendimento e Agendamento para Salão de Beleza
 
-**Disciplina:** ACSO – Sistemas Autônomos
+**Disciplina:** ACSO – Arquitetura e Computação de Sistemas Operacionais
 **Professor:** Gilberto Gomes
-**Instituição:** FAETEC de Quintino – Tecnólogo em Sistemas de Informação
+**Instituição:** FAETEC de Quintino – Técnico em Informática
 **Aluno:** Arthur André dos Santos Pravato
 **Turma:** 1212 (trabalho individual)
 **Data:** 24/10/2026

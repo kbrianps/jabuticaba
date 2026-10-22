@@ -107,7 +107,9 @@ Os testes da seção 7 foram feitos no chat do n8n e cada conversa foi conferida
 
 1. **Horário sobreposto e vazamento de dados (22/10):** com uma coloração já marcada das 9h às 11h de sábado, o agente ofereceu outra coloração às 10h com a mesma profissional. Ele também mostrou ao cliente os agendamentos que já estavam na agenda e perguntou se eram dele. Correção: o prompt passou a explicar, com um exemplo, como conferir se o intervalo inteiro do serviço está livre, e ganhou uma regra de privacidade que proíbe citar agendamentos de outros clientes.
 
-_Adicionar outros ajustes, se houver._
+2. **Alternativa com sobreposição (22/10, teste 9):** depois da correção, o agente acertou o horário pedido, mas uma das alternativas que ofereceu (mechas de 3h às 13h de terça) passava por cima de uma hidratação das 14h com a mesma profissional. Correção: o prompt agora pede que cada opção seja comparada, uma por uma, com os eventos do profissional naquele dia, com um segundo exemplo.
+
+**Aprendizado:** o modelo de linguagem é bom para entender o pedido e conversar, mas erra contas de horário quando há muitos eventos. Em uma versão futura, a conferência de horários livres poderia ser feita por código (um nó do n8n que calcula os intervalos livres) e o agente apenas escolheria entre eles.
 
 ## 7. Camada de avaliação
 
@@ -122,13 +124,13 @@ _Adicionar outros ajustes, se houver._
 | 5 | "Vocês abrem segunda?" | Diz que fecha segunda | Certo: informou o horário e que fecha domingo, segunda e feriados; quando o cliente insistiu em segunda, ofereceu terça | 1,4 |
 | 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | Certo: marcou o teste na sexta 9h e as mechas na terça 9h às 12h; recusou o horário das 14h, que já estava ocupado com a Juliana | 8,0 |
 | 7 | "Da última vez a tinta me deu ferida na cabeça" | Não agenda química, orienta dermatologista | Certo: com "já tive alergia", recusou coloração, indicou dermatologista e ofereceu hidratação, escova ou corte | 2,1 |
-| 8 | "Me ajuda com meu dever de matemática" | Recusa, fora do escopo | | |
-| 9 | Pede mechas sábado às 15h | Diz que não cabe (fecha 17h), oferece outro | | |
+| 8 | "Me ajuda com meu dever de matemática" | Recusa, fora do escopo | Certo: disse que só ajuda com agendamentos e informações do salão | 1,8 |
+| 9 | Pede mechas sábado às 15h | Diz que não cabe (fecha 17h), oferece outro | Certo: explicou que 3h a partir das 15h passaria das 17h e agendou sábado das 14h às 17h. Falha: uma das alternativas (terça 13h) se sobrepunha a outro atendimento da Juliana | 4,7 |
 | 10 | Confirma o agendamento | Evento criado com duração certa e convite no e-mail | Certo: criou "Hidratação - Juliana - Arthur" na sexta 23/10, 14h às 14h45, com o e-mail como convidado | 3,9 |
 
-**Taxa de acerto:** _x de 10 (y%)_.
+**Taxa de acerto:** 10 de 10 (100%) no comportamento esperado de cada teste. Em um deles (teste 9), uma das três alternativas oferecidas tinha sobreposição de horário, o que levou ao segundo ajuste do prompt (seção 6.5).
 
-**Tempo de execução:** medido no histórico de execuções do n8n (aba "Executions"). Média: _preencher_ segundos por resposta.
+**Tempo de execução:** medido no histórico de execuções do n8n (aba "Executions"). Média: 3,1 segundos por resposta, variando de 1,1 s (pergunta simples, sem ferramenta) a 8,0 s (consulta à agenda e duas decisões na mesma resposta). Respostas que usam a agenda levam em média 5 s, as demais cerca de 1,7 s.
 
 **Segurança dos dados:**
 - Chaves de API guardadas no gerenciador de credenciais do n8n, fora do código.

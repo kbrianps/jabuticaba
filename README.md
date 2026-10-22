@@ -31,59 +31,71 @@ Trabalho de ACSO (Sistemas Autônomos, FAETEC), tema **"Criando um agente autôn
 4. Ele consulta os horários livres da semana no Google Agenda e oferece opções que caibam na duração do serviço.
 5. Quando a cliente confirma, ele cria o evento e o Google envia o convite por e-mail.
 
-## Arquitetura
+## O MVP: uma aplicação customizável
+
+O agente é dividido em duas partes:
+
+- **Parte genérica (não muda):** o fluxo do n8n e o prompt. Eles não sabem que é um salão.
+- **Parte do negócio (muda para cada cliente):** o nó **Config** do fluxo, com nome, serviços, preços, profissionais e regras.
+
+Para atender uma barbearia ou um estúdio de unhas, basta preencher [negocios/modelo.md](negocios/modelo.md) e colar no Config. O primeiro caso é o salão: [negocios/salao.md](negocios/salao.md).
 
 ```mermaid
 flowchart LR
-    U[Cliente<br/>Chat / WhatsApp] --> N[n8n<br/>AI Agent]
-    N --> L[Cérebro<br/>DeepSeek]
-    L --> D{Tomada de decisão}
-    D -- dúvida ou triagem --> K[Base de conhecimento<br/>dados/salao.md]
-    D -- ver horários --> G1[Google Agenda<br/>horários livres]
-    D -- confirmar --> G2[Google Agenda<br/>criar evento + convite]
-    N --> U
+    U[Cliente<br/>chat] --> C[Config<br/>dados do negócio]
+    C --> A[AI Agent]
+    A <--> L[Cérebro<br/>DeepSeek]
+    A <--> M[Memória<br/>da conversa]
+    A -- ver horários --> G1[Google Agenda<br/>ver_agenda]
+    A -- confirmar --> G2[Google Agenda<br/>criar_agendamento + convite]
+    A --> U
 ```
 
 | Peça | Para que serve | Custo |
 |---|---|---|
-| **n8n** | Monta o agente arrastando blocos (low-code) | Grátis (self-hosted) |
+| **n8n Cloud** | Monta o agente com blocos (low-code) | Teste grátis de 14 dias |
 | **DeepSeek** | O cérebro: entende a mensagem e decide qual ferramenta usar | Centavos |
-| **Google Agenda** | Ver horários livres e criar o atendimento com convite por e-mail | Grátis |
-| **Evolution API** | Liga um número de WhatsApp ao n8n | Grátis (opcional, ver abaixo) |
-| **Docker** | Roda o n8n (e a Evolution) no PC com um comando | Grátis |
+| **Google Agenda** | Ver horários e criar o atendimento com convite por e-mail | Grátis |
+| **Evolution API** | Liga um número de WhatsApp ao n8n | Grátis (fica para depois do MVP) |
 
-## Plano para os 3 dias
+**O que fica fora do MVP, de propósito:** WhatsApp de verdade (o chat do n8n simula a conversa), cancelamento e remarcação, lembretes e painel para o dono do negócio.
 
-O Tema 3 do professor aceita "simular um chat de WhatsApp". Por isso o plano usa primeiro o **chat do próprio n8n**, que já funciona sem configurar nada. O WhatsApp de verdade fica como bônus se sobrar tempo.
+## Como rodar o MVP
 
-### Dia 1 (21–22/10): agente conversando
-1. Instalar o Docker Desktop e subir o n8n: `docker run -it --rm -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n` e abrir `http://localhost:5678`.
-2. Criar conta na DeepSeek, colocar uns poucos reais de crédito e gerar a chave de API.
-3. No n8n: bloco **When chat message received** → bloco **AI Agent** com modelo **DeepSeek Chat** e **Simple Memory**.
-4. Colar o prompt de [prompts/prompt-base.md](prompts/prompt-base.md) no campo "System Message" do AI Agent.
-5. Conversar pelo botão "Open chat" e ver a triagem funcionando.
+### 1. Criar as contas
+1. **n8n Cloud:** criar conta em [n8n.io](https://n8n.io) (teste grátis).
+2. **DeepSeek:** criar conta em [platform.deepseek.com](https://platform.deepseek.com), colocar uns poucos reais de crédito e gerar uma chave de API.
+3. **Google:** usar uma conta Gmail de teste. No Google Agenda, criar uma agenda chamada "Salão Jabuticaba" (opcional, pode usar a principal).
 
-**Aprende:** o que é LLM, prompt, token, memória e por que a IA "alucina".
+### 2. Importar o fluxo
+1. No n8n, criar um workflow novo, clicar nos três pontinhos e em **Import from File**.
+2. Escolher o arquivo [n8n/agente-agendamento.json](n8n/agente-agendamento.json).
 
-### Dia 2 (22–23/10): ferramentas
-1. Criar uma agenda "Salão Jabuticaba" no Google Agenda e ligar a conta Google no n8n.
-2. Adicionar no AI Agent duas ferramentas **Google Calendar Tool**: uma para ver eventos da semana (horários ocupados) e outra para criar evento com o e-mail da cliente como convidada.
-3. Criar um Google Docs com o texto de [dados/salao.md](dados/salao.md) e adicionar a ferramenta **Google Docs Tool** para ler esse documento (é a nossa base de conhecimento, um RAG simplificado).
-4. Testar os casos da tabela em [docs/relatorio.md](docs/relatorio.md#7-camada-de-avaliação) e anotar os resultados.
+### 3. Ligar as credenciais
+1. Abrir o nó **DeepSeek** e criar a credencial colando a chave de API.
+2. Abrir o nó **ver_agenda**, criar a credencial do Google (Sign in with Google) e escolher a agenda.
+3. Abrir o nó **criar_agendamento**, usar a mesma credencial e a mesma agenda.
 
-**Aprende:** a diferença entre chatbot e agente: o agente decide sozinho quando usar cada ferramenta.
+### 4. Testar
+1. Clicar em **Open chat** e conversar: "oi, quero cobrir meus fios brancos, tem horário sábado?".
+2. Conferir o evento no Google Agenda e o convite no e-mail usado na conversa.
+3. Na aba **Executions** dá para ver cada passo que o agente tomou e quanto tempo levou.
 
-### Dia 3 (23–24/10): entrega
-1. Gravar o vídeo (2 a 3 minutos): mostrar o fluxo no n8n, uma conversa completa e o evento aparecendo na agenda e o convite no e-mail.
-2. Completar [docs/relatorio.md](docs/relatorio.md) com os resultados dos testes e passar para o Word com prints.
-3. Montar o PowerPoint usando as mesmas seções do relatório.
+### Alternativa: n8n local
+Com o Docker Desktop instalado: `docker run -it --rm -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n` e abrir `http://localhost:5678`. O fluxo importa igual. A diferença é que a conta Google exige criar um projeto no Google Cloud com OAuth, e o WhatsApp exige um endereço público.
 
-### Bônus: WhatsApp de verdade
+## Plano até a entrega
+
+- **Dia 1 (22/10):** criar as contas, importar o fluxo, conversar com o agente. **Aprende:** o que é LLM, prompt, token, memória e por que a IA "alucina".
+- **Dia 2 (23/10):** ligar o Google Agenda, rodar os 10 testes de [docs/relatorio.md](docs/relatorio.md#7-camada-de-avaliação) e ajustar o prompt. **Aprende:** a diferença entre chatbot e agente: o agente decide sozinho quando usar cada ferramenta.
+- **Dia 3 (24/10):** gravar o vídeo (2 a 3 minutos mostrando o fluxo, uma conversa e o evento na agenda), passar o relatório para o Word e montar o PowerPoint.
+
+### Depois do MVP: WhatsApp de verdade
 Subir a Evolution API, ler o QR Code com um chip de teste, apontar o webhook para o n8n e trocar o gatilho de chat por um **Webhook** + **HTTP Request** para responder. Use um número de teste: a Evolution usa o WhatsApp Web, que não é a API oficial, e o número pode ser bloqueado.
 
 ## Pensando em produto (depois do trabalho)
 
-A mesma base serve para vender um "atendente automático" para salões, barbearias, estúdios de unha e clínicas de estética: um número de WhatsApp, uma agenda e uma base de conhecimento por cliente, rodando em um servidor barato.
+Como o fluxo já é genérico, cada novo cliente (salão, barbearia, estúdio de unhas, clínica de estética) é só um novo Config, um número de WhatsApp e uma agenda. Para não pagar o n8n Cloud por cliente, o caminho é levar o fluxo para um n8n próprio em um servidor barato.
 
 ## Cuidados
 

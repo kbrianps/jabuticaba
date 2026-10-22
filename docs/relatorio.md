@@ -16,6 +16,8 @@ Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Q
 
 **Fora do escopo:** pagamento, cancelamento e remarcação, programa de fidelidade e envio de fotos.
 
+**Aplicação customizável:** o agente foi construído como um MVP genérico. O fluxo e o prompt não citam o salão; tudo o que é do negócio (nome, serviços, preços, profissionais e regras) fica em um único nó de configuração. Assim, a mesma solução pode ser adaptada a uma barbearia ou a um estúdio de unhas só trocando a configuração.
+
 ## 2. Objetivos
 
 **Objetivo geral:** desenvolver um agente autônomo de IA que realize o atendimento inicial e o agendamento de serviços de um salão de beleza sem intervenção humana.
@@ -33,12 +35,11 @@ Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Q
 
 | Componente | Ferramenta | Por que foi escolhida |
 |---|---|---|
-| Orquestração | n8n (self-hosted) | Open-source, gratuito, tem nó pronto de AI Agent com memória e ferramentas |
+| Orquestração | n8n Cloud | Tem nó pronto de AI Agent com memória e ferramentas, não exige instalação e o fluxo pode ser levado para um n8n próprio depois |
 | Modelo de linguagem | DeepSeek Chat | Custo muito baixo por mensagem e bom desempenho em português |
 | Agenda | Google Calendar API | Gratuita, popular e envia convites por e-mail automaticamente |
-| Base de conhecimento | Google Docs | Fácil de a dona do salão editar sem saber programar |
+| Configuração do negócio | Nó Config (Edit Fields) do n8n | Um único lugar para trocar os dados do negócio |
 | Interface | Chat do n8n (simulando WhatsApp) / Evolution API | Teste imediato; WhatsApp real como evolução |
-| Infraestrutura | Docker | Sobe o sistema com um comando em qualquer computador |
 
 ## 4. Tipo de abordagem: visual (low-code)
 
@@ -53,7 +54,7 @@ O professor apresentou dois caminhos: abordagem visual (no-code / low-code) e ab
 | Vantagens | Muito rápido, qualquer pessoa usa | Rápido e ainda flexível, integra com qualquer API |
 | Desvantagens | Preso aos recursos da plataforma, geralmente pago, dados ficam na big tech | Exige noções de API, JSON e expressões |
 
-**Justificativa:** o n8n é low-code. Ele permite montar o agente visualmente, o que cabe no prazo do trabalho, mas também aceita expressões e chamadas HTTP, o que foi necessário para passar a data atual ao agente e para integrar o WhatsApp. Por ser open-source e rodar no nosso próprio computador, os dados das clientes não ficam em uma plataforma de terceiros e não há mensalidade, o que importa para um pequeno negócio.
+**Justificativa:** o n8n é low-code. Ele permite montar o agente visualmente, o que cabe no prazo do trabalho, mas também aceita expressões e chamadas HTTP, o que foi necessário para passar a data atual ao agente e para integrar o WhatsApp. Por ser open-source, o mesmo fluxo pode sair do n8n Cloud, usado no MVP pela praticidade, e rodar em um servidor próprio, sem mensalidade e com os dados das clientes sob controle do negócio.
 
 Comparado à abordagem em Python (CrewAI / LangChain), o n8n entrega o mesmo conceito de agente (LLM + memória + ferramentas) com menos tempo de desenvolvimento. A desvantagem é ter menos controle fino do que um código escrito do zero.
 
@@ -61,19 +62,20 @@ Comparado à abordagem em Python (CrewAI / LangChain), o n8n entrega o mesmo con
 
 ```
 Interface (Chat)  →  Cérebro (LLM)  →  Tomada de Decisão  →  Execução da Ferramenta
-   Cliente           DeepSeek no        É dúvida? Qual          Google Docs (base)
-   escreve no        AI Agent do        serviço? Precisa        Google Agenda (ver)
-   chat              n8n + memória      de teste? Quer          Google Agenda (criar)
-                                        horário? Confirmou?     Resposta à cliente
+   Cliente           DeepSeek no        É dúvida? Qual          Google Agenda (ver)
+   escreve no        AI Agent do        serviço? Precisa        Google Agenda (criar)
+   chat              n8n + memória      de teste? Quer          Resposta à cliente
+                     + Config           horário? Confirmou?
 ```
 
 _Inserir aqui o print do fluxo no n8n e o diagrama de blocos desenhado (ex.: draw.io)._
 
 **Descrição das operações**
 1. **Interface:** a cliente envia a mensagem pelo chat. O n8n recebe pelo gatilho "When chat message received".
-2. **Cérebro:** o nó AI Agent envia a mensagem, o histórico (Simple Memory) e o prompt base para o DeepSeek.
-3. **Tomada de decisão:** o modelo decide se responde direto, se consulta a base de conhecimento, se consulta a agenda ou se cria o evento.
-4. **Execução da ferramenta:** o n8n executa a ferramenta escolhida e devolve o resultado ao modelo, que escreve a resposta final.
+2. **Configuração:** o nó Config acrescenta os dados do negócio (nome, serviços, regras).
+3. **Cérebro:** o nó AI Agent monta o prompt com esses dados e envia a mensagem e o histórico (Simple Memory) para o DeepSeek.
+4. **Tomada de decisão:** o modelo decide se responde direto, se consulta a agenda ou se cria o evento.
+5. **Execução da ferramenta:** o n8n executa a ferramenta escolhida e devolve o resultado ao modelo, que escreve a resposta final.
 
 ## 6. Etapas do projeto
 
@@ -88,16 +90,15 @@ O prompt completo está em `prompts/prompt-base.md`. Ele define:
 - **Segurança:** exige teste de alergia antes da primeira química e não agenda química para quem já teve reação.
 
 ### 6.3 Conexão da base de dados (RAG)
-As informações do salão (serviços, duração, preços, profissionais, regras) ficam em um Google Docs (`dados/salao.md`). O agente tem uma ferramenta para ler esse documento sempre que precisa responder uma dúvida ou fazer a triagem. Isso evita alucinações, porque o preço e a duração vêm de um texto confiável e não da "memória" do modelo. Se o salão mudar um preço, basta editar o documento.
+As informações do salão (serviços, duração, preços, profissionais, regras) ficam no campo `base_conhecimento` do nó Config (`negocios/salao.md`) e são entregues ao modelo junto com o prompt a cada mensagem. Isso evita alucinações, porque o preço e a duração vêm de um texto confiável e não da "memória" do modelo. Se o salão mudar um preço, basta editar o Config.
 
-É uma forma simplificada de RAG (Retrieval-Augmented Generation): o agente busca a informação antes de responder. Para uma base grande, o próximo passo seria usar um banco vetorial.
+Como a base de um pequeno negócio é curta, ela cabe inteira no prompt, que é a forma mais simples de alimentar o agente com dados. Em um RAG completo (Retrieval-Augmented Generation), o agente buscaria apenas os trechos relevantes em uma base maior, como manuais ou um banco vetorial. Esse é o próximo passo caso a base cresça.
 
 ### 6.4 Criação das ferramentas / APIs
 | Ferramenta | Nó do n8n | O que faz |
 |---|---|---|
-| Ler base de conhecimento | Google Docs Tool | Lê o documento do salão |
-| Ver horários | Google Calendar Tool (Get Many) | Lista os atendimentos dos próximos 7 dias |
-| Agendar atendimento | Google Calendar Tool (Create) | Cria o evento com a cliente como convidada |
+| ver_agenda | Google Calendar Tool (Get Many) | Lista os atendimentos já marcados em um período |
+| criar_agendamento | Google Calendar Tool (Create) | Cria o evento com a cliente como convidada |
 
 **Integrações configuradas:** chave de API do DeepSeek e credencial OAuth2 do Google no gerenciador de credenciais do n8n (as chaves não ficam no fluxo nem no GitHub). No bônus com WhatsApp: webhook da Evolution API apontando para o n8n.
 
@@ -127,7 +128,7 @@ Ver seção 7. _Descrever aqui o que foi ajustado no prompt depois dos testes, e
 
 **Segurança dos dados:**
 - Chaves de API guardadas no gerenciador de credenciais do n8n, fora do código.
-- n8n rodando localmente: as conversas não ficam em plataforma de terceiros.
+- Ferramentas com poder limitado: o agente só consegue ler e criar eventos na agenda do negócio, não consegue apagar nem acessar outros dados.
 - O agente só pede nome e e-mail, o mínimo para agendar (princípio da LGPD).
 - Testes feitos apenas com dados fictícios.
 

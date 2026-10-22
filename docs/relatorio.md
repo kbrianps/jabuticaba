@@ -36,7 +36,7 @@ Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Q
 | Componente | Ferramenta | Por que foi escolhida |
 |---|---|---|
 | Orquestração | n8n Cloud | Tem nó pronto de AI Agent com memória e ferramentas, não exige instalação e o fluxo pode ser levado para um n8n próprio depois |
-| Modelo de linguagem | DeepSeek Chat | Custo muito baixo por mensagem e bom desempenho em português |
+| Modelo de linguagem | DeepSeek (modelo deepseek-flash) | Custo muito baixo por mensagem e bom desempenho em português |
 | Agenda | Google Calendar API | Gratuita, popular e envia convites por e-mail automaticamente |
 | Configuração do negócio | Nó Config (Edit Fields) do n8n | Um único lugar para trocar os dados do negócio |
 | Interface | Chat do n8n (simulando WhatsApp) / Evolution API | Teste imediato; WhatsApp real como evolução |

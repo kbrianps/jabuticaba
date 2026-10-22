@@ -5,7 +5,7 @@
       "parameters": {
         "options": {}
       },
-      "id": "5ed341bb-e234-475d-890b-0500b7c28286",
+      "id": "8cd42dda-be08-4929-89c0-87d71b10cc06",
       "name": "Chat",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
@@ -13,50 +13,50 @@
         0,
         0
       ],
-      "webhookId": "ec2cf13e-8dae-4a51-9974-899fdff5545a"
+      "webhookId": "fbe11552-ee60-4ae5-a742-3f6a635c69d7"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "866d39d5-dcbc-4af5-ad22-11f2d40bb582",
+              "id": "fffc1c5d-233d-49de-8249-fcae9bfc96e2",
               "name": "nome_negocio",
               "value": "Salão Jabuticaba",
               "type": "string"
             },
             {
-              "id": "d4fce340-fe4f-41a2-bc50-485483649adc",
+              "id": "76a014b4-ca90-45be-ad5f-24c88a8357dd",
               "name": "nome_assistente",
               "value": "Jabu",
               "type": "string"
             },
             {
-              "id": "62899126-edc1-446d-95c7-bfb55e868dff",
+              "id": "bf1b579d-9d22-466d-b3f7-58650aef84bc",
               "name": "tipo_negocio",
               "value": "salão de beleza",
               "type": "string"
             },
             {
-              "id": "a10f07c0-eab6-4eb2-bccd-8f48130ccacb",
+              "id": "4332d09f-da57-4254-ba7a-136764e4fa83",
               "name": "tom",
               "value": "simpático e acolhedor, com no máximo 1 emoji por mensagem",
               "type": "string"
             },
             {
-              "id": "3cea2462-5067-4e1a-a727-db482e7084f9",
+              "id": "820f4a3d-be60-418e-9bb6-0e5e573dc335",
               "name": "fuso",
               "value": "America/Sao_Paulo",
               "type": "string"
             },
             {
-              "id": "99b00a04-3f2a-4552-8d84-289f865a8deb",
+              "id": "53043e79-49ef-4069-aeaf-77f2bd8b30f0",
               "name": "base_conhecimento",
               "value": "SOBRE\nEndereço: Rua das Jabuticabeiras, 100, loja 3, Centro, Rio de Janeiro, RJ\nTelefone: (21) 0000-0000\nFuncionamento: terça a sexta das 9h às 19h, sábado das 8h às 17h. Fechado domingo, segunda e feriados.\nAlmoço: não há atendimentos entre 12h e 13h.\n\nPROFISSIONAIS\n- Juliana: cabeleireira (corte feminino, escova, hidratação, coloração, mechas). Terça a sábado.\n- Rafael: barbeiro e cabeleireiro (corte masculino, corte feminino, barba). Quarta a sábado.\n- Patrícia: manicure, pedicure e sobrancelha. Terça a sábado.\n\nSERVIÇOS (duração, preço, profissional)\n- Corte feminino: 1h, R$ 80, Juliana ou Rafael\n- Corte masculino: 30 min, R$ 45, Rafael\n- Barba: 30 min, R$ 35, Rafael\n- Escova: 45 min, R$ 60, Juliana\n- Hidratação: 45 min, R$ 70, Juliana\n- Coloração (raiz ou cabelo todo): 2h, R$ 180, Juliana\n- Mechas / luzes: 3h, R$ 300, Juliana\n- Manicure: 45 min, R$ 35, Patrícia\n- Pedicure: 45 min, R$ 40, Patrícia\n- Mão e pé: 1h30, R$ 65, Patrícia\n- Design de sobrancelha: 30 min, R$ 40, Patrícia\n- Teste de alergia (química): 15 min, grátis, Juliana\n\nGUIA PARA A TRIAGEM\n- \"Cobrir fios brancos\", \"mudar a cor\", \"retocar a raiz\": Coloração\n- \"Clarear\", \"luzes\", \"ficar loira\": Mechas / luzes\n- \"Cabelo ressecado\", \"sem brilho\", \"quebradiço\": Hidratação\n- \"Arrumar o cabelo para uma festa\", \"deixar liso hoje\": Escova\n- \"Aparar as pontas\", \"mudar o corte\": Corte\n- \"Fazer as unhas\": Manicure, Pedicure ou Mão e pé\n\nPOLÍTICAS\n- Chegar 10 minutos antes. Atraso de mais de 15 minutos pode precisar ser remarcado.\n- Cancelamento ou remarcação: avisar com 24 horas de antecedência.\n- Pagamento: Pix, débito, crédito (até 3x sem juros acima de R$ 150) e dinheiro.",
               "type": "string"
             },
             {
-              "id": "8a6f069d-a32a-49c4-a596-dc746e6d6d57",
+              "id": "9b10dd69-8d3b-4c4d-af0a-829472ec5cae",
               "name": "regras_especificas",
               "value": "- Coloração e mechas: pergunte se a cliente já fez química no salão. Se nunca fez, avise que precisa do teste de alergia gratuito pelo menos 48 horas antes e ofereça marcar o teste primeiro.\n- Se a cliente contar que já teve alergia, coceira forte ou ferida no couro cabeludo depois de química, não agende coloração nem mechas. Oriente procurar um dermatologista e ofereça um serviço sem química.",
               "type": "string"
@@ -66,7 +66,7 @@
         "includeOtherFields": true,
         "options": {}
       },
-      "id": "9bb97f9d-fcd5-4c42-8e47-84fe58c9283a",
+      "id": "ad2df1c9-6966-4266-8fa2-032791cd5adb",
       "name": "Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -83,7 +83,7 @@
           "systemMessage": "=Você é {{ $('Config').item.json.nome_assistente }}, assistente virtual de atendimento do {{ $('Config').item.json.nome_negocio }} ({{ $('Config').item.json.tipo_negocio }}). Sua função é entender o que o cliente precisa, indicar o serviço e o profissional certo e agendar o horário.\n\nData e hora atual: {{ $now.setZone($('Config').item.json.fuso).setLocale('pt-BR').toFormat(\"cccc, dd/LL/yyyy HH:mm\") }}\n\nPASSO A PASSO\n1. Cumprimente e pergunte o nome do cliente e o que ele precisa.\n2. Faça a triagem: se o cliente descrever o que quer com as próprias palavras, use as INFORMAÇÕES DO NEGÓCIO para indicar o serviço, a duração, o preço e o profissional.\n3. Use a ferramenta \"ver_agenda\" para ver os horários ocupados nos próximos 7 dias e ofereça até 3 horários livres que caibam na duração do serviço, dentro do horário de funcionamento e sem conflito com outro atendimento do mesmo profissional.\n4. Quando o cliente escolher, peça o e-mail dele.\n5. Repita o resumo (nome, serviço, profissional, dia, hora, preço, e-mail) e peça confirmação.\n6. Só depois do \"sim\", use a ferramenta \"criar_agendamento\" com a duração correta do serviço.\n7. Confirme o agendamento e avise que o convite chegou por e-mail.\n\nREGRAS GERAIS\n- Use somente as INFORMAÇÕES DO NEGÓCIO. Se a resposta não estiver lá, diga que não sabe e que a equipe vai entrar em contato.\n- Nunca invente serviço, preço ou horário.\n- Não responda assuntos fora do negócio. Diga educadamente que só ajuda com atendimentos do {{ $('Config').item.json.nome_negocio }}.\n- Não prometa resultados.\n\nREGRAS ESPECÍFICAS DESTE NEGÓCIO\n{{ $('Config').item.json.regras_especificas }}\n\nFORMATO DAS RESPOSTAS\n- Português do Brasil, tom {{ $('Config').item.json.tom }}.\n- Mensagens curtas, de no máximo 4 linhas, como em um chat de WhatsApp.\n- Horários no formato \"terça, 28/10 às 14h\".\n- Título do evento: \"<Serviço> - <Profissional> - <Nome do cliente>\".\n\nINFORMAÇÕES DO NEGÓCIO\n{{ $('Config').item.json.base_conhecimento }}"
         }
       },
-      "id": "a1011c6c-cacd-4c5b-a69d-4868843497e0",
+      "id": "76a006ab-58d8-4c9d-bb8a-9eb2fb62702b",
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
@@ -94,12 +94,12 @@
     },
     {
       "parameters": {
-        "model": "deepseek-chat",
+        "model": "deepseek-flash",
         "options": {
           "temperature": 0.3
         }
       },
-      "id": "6612f37b-db35-427b-80d3-41e6aaa4d5b5",
+      "id": "f2851590-c172-43c8-b0d6-f9a504800050",
       "name": "DeepSeek",
       "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
       "typeVersion": 1,
@@ -114,7 +114,7 @@
         "sessionKey": "={{ $('Chat').item.json.sessionId }}",
         "contextWindowLength": 20
       },
-      "id": "7d31463c-81ae-4e7d-b9b7-f5ba8ed371fc",
+      "id": "428f2114-3e2f-41df-a171-c754b21b6755",
       "name": "Memória",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
@@ -141,7 +141,7 @@
           "fields": "items(summary,start,end)"
         }
       },
-      "id": "4f981691-47a5-4f94-beb1-4b1d51da4a39",
+      "id": "4ae023ae-2245-471f-9c3f-3575c2d5cfd8",
       "name": "ver_agenda",
       "type": "n8n-nodes-base.googleCalendarTool",
       "typeVersion": 1.3,
@@ -170,7 +170,7 @@
           "sendUpdates": "all"
         }
       },
-      "id": "71296440-5639-4f8f-ab25-121eea141b46",
+      "id": "70363d79-6abd-4d97-bcd7-72ea7900ce27",
       "name": "criar_agendamento",
       "type": "n8n-nodes-base.googleCalendarTool",
       "typeVersion": 1.3,

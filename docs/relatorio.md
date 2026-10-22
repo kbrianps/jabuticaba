@@ -38,7 +38,7 @@ Salões de beleza recebem a maior parte dos pedidos de horário pelo WhatsApp. Q
 | Modelo de linguagem | DeepSeek (modelo deepseek-flash) | Custo muito baixo por mensagem e bom desempenho em português |
 | Agenda | Google Calendar API | Gratuita, popular e envia convites por e-mail automaticamente |
 | Configuração do negócio | Nó Config (Edit Fields) do n8n | Um único lugar para trocar os dados do negócio |
-| Interface | Chat do n8n (simulando WhatsApp) / Evolution API | Teste imediato; WhatsApp real como evolução |
+| Interface | WhatsApp pela Evolution API (e chat do n8n nos testes) | A Evolution API é gratuita e open-source e liga um número real ao n8n; o chat do n8n foi usado nos testes por ser imediato |
 
 ## 4. Tipo de abordagem: visual (low-code)
 
@@ -108,6 +108,21 @@ Os testes da seção 7 foram feitos no chat do n8n e cada conversa foi conferida
 
 **Aprendizado:** o modelo de linguagem é bom para entender o pedido e conversar, mas erra contas de horário quando há muitos eventos. Em uma versão futura, a conferência de horários livres poderia ser feita por código (um nó do n8n que calcula os intervalos livres) e o agente apenas escolheria entre eles.
 
+### 6.6 Integração com o WhatsApp
+Depois dos testes no chat, o agente foi ligado a um número de WhatsApp real com a **Evolution API**, uma ferramenta open-source que conecta um número ao n8n pelo WhatsApp Web. A Evolution roda no computador com Docker (pasta `whatsapp/`), e o número é conectado lendo um QR Code. O fluxo "Agente WhatsApp (Jabuticaba)" no n8n faz:
+
+1. **Webhook:** recebe a mensagem que a Evolution envia.
+2. **Leitura:** separa o texto e o número. O número vira a chave da memória, então cada cliente tem a sua conversa.
+3. **Filtro:** durante os testes, só responde a um número de teste, para não atender os contatos pessoais do número conectado.
+4. **Agente:** o mesmo AI Agent do chat, com o mesmo prompt, base e ferramentas.
+5. **Resposta:** um HTTP Request chama a Evolution para enviar a resposta. Um túnel da Cloudflare dá um endereço público para o n8n Cloud chegar à Evolution.
+
+![Caminho de uma mensagem pelo WhatsApp](img/whatsapp.png)
+
+**Resultado:** em uma conversa de 11 mensagens pelo WhatsApp, o agente respondeu todas, em cerca de 3 segundos cada (incluindo o envio), indicou a pedicure com a Patrícia, ofereceu horários livres, confirmou o resumo e criou o evento no Google Agenda. Também recusou uma pergunta fora do escopo e avisou que não oferece um serviço que não está na base.
+
+**Cuidados:** a Evolution exige uma chave (apikey), guardada no gerenciador de credenciais do n8n. Como ela usa o WhatsApp Web e não a API oficial da Meta, existe risco de bloqueio do número, por isso foi usado um número de teste e poucas mensagens.
+
 ## 7. Camada de avaliação
 
 **Taxa de acerto:** cada caso foi testado e marcado como certo ou errado.
@@ -137,11 +152,11 @@ Os testes da seção 7 foram feitos no chat do n8n e cada conversa foi conferida
 
 ## 8. Conclusão
 
-O agente cumpriu o objetivo: atendeu clientes por chat, entendeu pedidos escritos com as palavras do próprio cliente, indicou serviço, profissional, duração e preço, aplicou a regra de segurança da química e criou os atendimentos no Google Agenda com convite por e-mail. Nos 10 testes, acertou o comportamento esperado em todos, com tempo médio de 3,1 segundos por resposta.
+O agente cumpriu o objetivo: atendeu clientes pelo chat e por um número de WhatsApp real, entendeu pedidos escritos com as palavras do próprio cliente, indicou serviço, profissional, duração e preço, aplicou a regra de segurança da química e criou os atendimentos no Google Agenda com convite por e-mail. Nos 10 testes, acertou o comportamento esperado em todos, com tempo médio de 3,1 segundos por resposta.
 
 O principal aprendizado foi a diferença entre um chatbot e um agente: o agente decide sozinho quando consultar a agenda e quando criar o evento. Os testes também mostraram o limite do modelo de linguagem: ele conversa muito bem, mas pode errar contas de horário. Isso foi reduzido com engenharia de prompt e pode ser resolvido de vez calculando os horários livres por código.
 
-**Próximos passos:** conectar um número de WhatsApp real pela Evolution API, enviar lembrete no dia anterior, permitir cancelamento e remarcação e testar a solução com um salão de verdade. Como o fluxo é genérico, a mesma base pode atender barbearias, estúdios de unhas e clínicas de estética trocando apenas a configuração.
+**Próximos passos:** levar a Evolution API e o n8n para um servidor com endereço fixo (ou usar a API oficial do WhatsApp Business), enviar lembrete no dia anterior, permitir cancelamento e remarcação e testar a solução com um salão de verdade. Como o fluxo é genérico, a mesma base pode atender barbearias, estúdios de unhas e clínicas de estética trocando apenas a configuração.
 
 ## Bibliografia
 

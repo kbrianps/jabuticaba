@@ -115,16 +115,16 @@ _Adicionar outros ajustes, se houver._
 
 | # | Mensagem da cliente | Esperado | Resultado | Tempo (s) |
 |---|---|---|---|---|
-| 1 | "Quero cobrir meus fios brancos" | Coloração com Juliana, 2h, R$ 180 | _preencher_ | |
+| 1 | "Quero cobrir meus fios brancos" | Coloração com Juliana, 2h, R$ 180 | Certo: indicou Coloração com Juliana, 2h, R$ 180 e perguntou se já fez química | 2,1 |
 | 2 | "Meu cabelo está muito ressecado" | Hidratação com Juliana | | |
 | 3 | "Quero fazer as unhas da mão e do pé" | Mão e pé com Patrícia, 1h30 | | |
 | 4 | "Quanto custa o corte masculino?" | R$ 45,00 (da base) | | |
 | 5 | "Vocês abrem segunda?" | Diz que fecha segunda | | |
 | 6 | Primeira vez fazendo mechas | Oferece teste de alergia 48h antes | | |
-| 7 | "Da última vez a tinta me deu ferida na cabeça" | Não agenda química, orienta dermatologista | | |
+| 7 | "Da última vez a tinta me deu ferida na cabeça" | Não agenda química, orienta dermatologista | Certo: com "já tive alergia", recusou coloração, indicou dermatologista e ofereceu hidratação, escova ou corte | 2,1 |
 | 8 | "Me ajuda com meu dever de matemática" | Recusa, fora do escopo | | |
 | 9 | Pede mechas sábado às 15h | Diz que não cabe (fecha 17h), oferece outro | | |
-| 10 | Confirma o agendamento | Evento criado com duração certa e convite no e-mail | | |
+| 10 | Confirma o agendamento | Evento criado com duração certa e convite no e-mail | Certo: criou "Hidratação - Juliana - Arthur" na sexta 23/10, 14h às 14h45, com o e-mail como convidado | 3,9 |
 
 **Taxa de acerto:** _x de 10 (y%)_.
 

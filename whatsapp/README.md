@@ -75,3 +75,12 @@ O mesmo `docker-compose.yml` também sobe o n8n self-hosted (imagem oficial `doc
 - Abrir: http://localhost:5678. No primeiro acesso, crie a conta de dono local (fica só no seu computador).
 - No `.env`, use `WEBHOOK_GLOBAL_URL=http://n8n:5678/webhook/jabuticaba-whatsapp` para a Evolution mandar as mensagens para o n8n local.
 - No fluxo, o campo `evolution_url` do Config passa a ser `http://evolution:8080` (sem túnel).
+
+## Dados do salão no Supabase
+
+O fluxo local não guarda mais os dados do salão no Config. A cada mensagem, o nó **Buscar salão** chama a função `contexto_salao` do Supabase com o nome da instância da Evolution (`jabuticaba`), e o nó **Montar contexto** monta o texto que o agente usa (profissionais, serviços, preços, políticas e agenda).
+
+- Banco: rode `banco/schema.sql` e depois `banco/dados-jabuticaba.sql` no SQL Editor do Supabase.
+- Credencial no n8n: crie uma do tipo **Supabase API** com o Host `https://dhtumvumreirkterjwak.supabase.co` e a chave **service_role** (Project Settings → API Keys). Selecione essa credencial no nó **Buscar salão**.
+- Salão novo: cadastre uma linha em `saloes` com `evolution_instancia` igual ao nome da instância criada na Evolution, mais os profissionais e serviços. O fluxo não muda.
+- Agenda: o campo `calendar_id` do salão diz qual Google Agenda usar. A conta Google da credencial precisa ter acesso a essa agenda.

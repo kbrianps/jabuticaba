@@ -80,7 +80,14 @@ O mesmo `docker-compose.yml` também sobe o n8n self-hosted (imagem oficial `doc
 
 O fluxo local não guarda mais os dados do salão no Config. A cada mensagem, o nó **Buscar salão** chama a função `contexto_salao` do Supabase com o nome da instância da Evolution (`jabuticaba`), e o nó **Montar contexto** monta o texto que o agente usa (profissionais, serviços, preços, políticas e agenda).
 
-- Banco: rode `banco/schema.sql` e depois `banco/dados-jabuticaba.sql` no SQL Editor do Supabase.
+- Banco: rode no SQL Editor do Supabase, nesta ordem, `banco/schema.sql`, `banco/funcoes-agente.sql` e `banco/dados-jabuticaba.sql`. Em um banco que já existe, basta rodar `banco/funcoes-agente.sql`.
 - Credencial no n8n: crie uma do tipo **Supabase API** com o Host `https://dhtumvumreirkterjwak.supabase.co` e a chave **service_role** (Project Settings → API Keys). Selecione essa credencial no nó **Buscar salão**.
 - Salão novo: cadastre uma linha em `saloes` com `evolution_instancia` igual ao nome da instância criada na Evolution, mais os profissionais e serviços. O fluxo não muda.
 - Agenda: o campo `calendar_id` do salão diz qual Google Agenda usar. A conta Google da credencial precisa ter acesso a essa agenda.
+- Clientes: na primeira mensagem o cliente é cadastrado pelo número. Quando ele diz o nome e o e-mail, o agente salva (`salvar_cliente`) e não pergunta de novo nas próximas vezes.
+- Agendamentos: cada horário criado na Google Agenda também é gravado na tabela `agendamentos` (`registrar_agendamento`). O cliente pode remarcar ou cancelar pelo WhatsApp, e o agente só mexe nos agendamentos dele mesmo.
+- Chamar a equipe: quando o cliente pede uma pessoa, o agente manda uma mensagem para o número em `saloes.whatsapp_responsavel` (formato `5521999999999`) e fica 12 horas sem responder esse cliente. Para o agente voltar antes, apague o valor de `humano_ate` do cliente na tabela `clientes`.
+
+## Lembretes
+
+O fluxo `n8n/lembretes-local.json` roda todo dia às 18h e manda pelo WhatsApp um lembrete para quem tem horário no dia seguinte. Ele usa as mesmas credenciais (Supabase API e Header Auth) e, por enquanto, só envia para o `numero_teste` do Config.

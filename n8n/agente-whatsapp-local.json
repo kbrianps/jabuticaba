@@ -176,12 +176,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/contexto_salao",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/iniciar_conversa",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ p_instancia: $json.instancia }) }}",
+        "jsonBody": "={{ JSON.stringify({ p_instancia: $json.instancia, p_telefone: $json.numero }) }}",
         "options": {}
       },
       "id": "5b7e2c41-8d3a-4f6e-9a12-3c4d5e6f7a81",
@@ -195,7 +195,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nif (!ctx || !ctx.salao) return [];\nconst s = ctx.salao;\nconst duracao = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h}h${r ? String(r).padStart(2, '0') : ''}` : `${r} min`; };\nconst preco = v => Number(v) > 0 ? `R$ ${Number(v).toFixed(2).replace('.', ',').replace(',00', '')}` : 'grátis';\nconst profissionais = (ctx.profissionais ?? []).map(p => `- ${p.nome}: ${p.funcao ?? ''}. ${p.dias_trabalho ?? ''}.`).join('\\n');\nconst servicos = (ctx.servicos ?? []).map(v => `- ${v.nome}: ${duracao(v.duracao_min)}, ${preco(v.preco)}, ${(v.profissionais ?? []).join(' ou ')}${v.observacoes ? ` (${v.observacoes})` : ''}`).join('\\n');\nconst base = [\n  'SOBRE',\n  `Endereço: ${s.endereco ?? ''}`,\n  `Telefone: ${s.telefone ?? ''}`,\n  `Funcionamento: ${s.funcionamento ?? ''}`,\n  '',\n  'PROFISSIONAIS',\n  profissionais,\n  '',\n  'SERVIÇOS (duração, preço, profissional)',\n  servicos,\n  '',\n  'GUIA PARA A TRIAGEM',\n  s.guia_triagem ?? '',\n  '',\n  'POLÍTICAS',\n  s.politicas ?? ''\n].join('\\n');\nreturn [{ json: {\n  salao_id: s.id,\n  nome_negocio: s.nome,\n  nome_assistente: s.nome_assistente,\n  tipo_negocio: s.tipo_negocio,\n  tom: s.tom,\n  fuso: s.fuso,\n  regras_especificas: s.regras_especificas ?? '',\n  calendar_id: s.calendar_id ?? '',\n  base_conhecimento: base\n} }];"
+        "jsCode": "const ctx = $input.first().json;\nif (!ctx || !ctx.salao) return [];\nconst s = ctx.salao;\nconst c = ctx.cliente ?? {};\nif (c.humano_ate && new Date(c.humano_ate) > new Date()) return [];\nconst duracao = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h}h${r ? String(r).padStart(2, '0') : ''}` : `${r} min`; };\nconst preco = v => Number(v) > 0 ? `R$ ${Number(v).toFixed(2).replace('.', ',').replace(',00', '')}` : 'grátis';\nconst profissionais = (ctx.profissionais ?? []).map(p => `- ${p.nome}: ${p.funcao ?? ''}. ${p.dias_trabalho ?? ''}.`).join('\\n');\nconst servicos = (ctx.servicos ?? []).map(v => `- ${v.nome}: ${duracao(v.duracao_min)}, ${preco(v.preco)}, ${(v.profissionais ?? []).join(' ou ')}${v.observacoes ? ` (${v.observacoes})` : ''}`).join('\\n');\nconst agendamentos = (ctx.agendamentos ?? []).map(a => `- id ${a.id}: ${a.servico ?? 'serviço'} com ${a.profissional ?? 'profissional'}, ${a.quando} (${duracao(a.duracao_min)})`).join('\\n');\nconst base = [\n  'SOBRE',\n  `Endereço: ${s.endereco ?? ''}`,\n  `Telefone: ${s.telefone ?? ''}`,\n  `Funcionamento: ${s.funcionamento ?? ''}`,\n  '',\n  'PROFISSIONAIS',\n  profissionais,\n  '',\n  'SERVIÇOS (duração, preço, profissional)',\n  servicos,\n  '',\n  'GUIA PARA A TRIAGEM',\n  s.guia_triagem ?? '',\n  '',\n  'POLÍTICAS',\n  s.politicas ?? ''\n].join('\\n');\nreturn [{ json: {\n  salao_id: s.id,\n  nome_negocio: s.nome,\n  nome_assistente: s.nome_assistente,\n  tipo_negocio: s.tipo_negocio,\n  tom: s.tom,\n  fuso: s.fuso,\n  regras_especificas: s.regras_especificas ?? '',\n  calendar_id: s.calendar_id ?? '',\n  whatsapp_responsavel: s.whatsapp_responsavel ?? '',\n  cliente_nome: c.nome ?? '',\n  cliente_email: c.email ?? '',\n  cliente_agendamentos: agendamentos || 'Nenhum',\n  base_conhecimento: base\n} }];"
       },
       "id": "9c3f1a72-4e5b-4d8c-b6a3-7e8f9a0b1c22",
       "name": "Montar contexto",
@@ -211,7 +211,7 @@
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "=Você é {{ $('Montar contexto').item.json.nome_assistente }}, assistente virtual de atendimento do {{ $('Montar contexto').item.json.nome_negocio }} ({{ $('Montar contexto').item.json.tipo_negocio }}). Sua função é entender o que o cliente precisa, indicar o serviço e o profissional certo e agendar o horário.\n\nData e hora atual: {{ $now.setZone($('Montar contexto').item.json.fuso).setLocale('pt-BR').toFormat(\"cccc, dd/LL/yyyy HH:mm\") }}\n\nPASSO A PASSO\n1. Cumprimente e pergunte o nome do cliente e o que ele precisa.\n2. Faça a triagem: se o cliente descrever o que quer com as próprias palavras, use as INFORMAÇÕES DO NEGÓCIO para indicar o serviço, a duração, o preço e o profissional.\n3. Use a ferramenta \"ver_agenda\" para ver os horários ocupados nos próximos 7 dias e ofereça até 3 horários livres que caibam na duração do serviço, dentro do horário de funcionamento.\n   - Todo evento da agenda é atendimento de OUTRO cliente. Use os eventos só para saber o que está ocupado.\n   - Um horário só está livre se o intervalo inteiro (do início até o início + duração do serviço) não se sobrepõe a nenhum evento do mesmo profissional. Exemplo: se a profissional tem um evento das 9h às 11h, um serviço de 2h só pode começar às 11h ou depois, ou terminar até as 9h.\n   - Antes de oferecer cada opção, compare com cada evento do mesmo profissional naquele dia, um por um. Exemplo: se a profissional tem um evento das 14h às 14h45, um serviço de 3h começando às 13h (13h às 16h) não cabe.\n   - Se o cliente pedir um horário específico, faça essa mesma conferência antes de aceitar.\n4. Quando o cliente escolher, peça o e-mail dele.\n5. Repita o resumo (nome, serviço, profissional, dia, hora, preço, e-mail) e peça confirmação.\n6. Só depois do \"sim\", use a ferramenta \"criar_agendamento\" com a duração correta do serviço.\n7. Confirme o agendamento e avise que o convite chegou por e-mail.\n\nREGRAS GERAIS\n- Use somente as INFORMAÇÕES DO NEGÓCIO. Se a resposta não estiver lá, diga que não sabe e que a equipe vai entrar em contato.\n- Nunca invente serviço, preço ou horário.\n- Privacidade: nunca mostre, cite ou pergunte sobre agendamentos que já estão na agenda. Eles são de outros clientes.\n- Não responda assuntos fora do negócio. Diga educadamente que só ajuda com atendimentos do {{ $('Montar contexto').item.json.nome_negocio }}.\n- Não prometa resultados.\n\nREGRAS ESPECÍFICAS DESTE NEGÓCIO\n{{ $('Montar contexto').item.json.regras_especificas }}\n\nFORMATO DAS RESPOSTAS\n- Português do Brasil, tom {{ $('Montar contexto').item.json.tom }}.\n- Mensagens curtas, de no máximo 4 linhas, como em um chat de WhatsApp.\n- Horários no formato \"terça, 28/10 às 14h\".\n- Título do evento: \"<Serviço> - <Profissional> - <Nome do cliente>\".\n\nINFORMAÇÕES DO NEGÓCIO\n{{ $('Montar contexto').item.json.base_conhecimento }}"
+          "systemMessage": "=Você é {{ $('Montar contexto').item.json.nome_assistente }}, assistente virtual de atendimento do {{ $('Montar contexto').item.json.nome_negocio }} ({{ $('Montar contexto').item.json.tipo_negocio }}). Sua função é entender o que o cliente precisa, indicar o serviço e o profissional certo e agendar, remarcar ou cancelar horários.\n\nData e hora atual: {{ $now.setZone($('Montar contexto').item.json.fuso).setLocale('pt-BR').toFormat(\"cccc, dd/LL/yyyy HH:mm\") }}\n\nCLIENTE\n- Nome cadastrado: {{ $('Montar contexto').item.json.cliente_nome || 'não informado' }}\n- Nome no WhatsApp: {{ $('Ler mensagem').item.json.nome_whatsapp || 'não informado' }}\n- E-mail cadastrado: {{ $('Montar contexto').item.json.cliente_email || 'não informado' }}\n- Próximos agendamentos deste cliente:\n{{ $('Montar contexto').item.json.cliente_agendamentos }}\n\nPASSO A PASSO PARA AGENDAR\n1. Cumprimente. Se o nome cadastrado for conhecido, chame o cliente pelo nome e não pergunte de novo. Se não for, pergunte o nome. Pergunte o que ele precisa.\n2. Faça a triagem: se o cliente descrever o que quer com as próprias palavras, use as INFORMAÇÕES DO NEGÓCIO para indicar o serviço, a duração, o preço e o profissional.\n3. Use a ferramenta \"ver_agenda\" para ver os horários ocupados nos próximos 7 dias e ofereça até 3 horários livres que caibam na duração do serviço, dentro do horário de funcionamento.\n   - Todo evento da agenda é atendimento de OUTRO cliente. Use os eventos só para saber o que está ocupado.\n   - Um horário só está livre se o intervalo inteiro (do início até o início + duração do serviço) não se sobrepõe a nenhum evento do mesmo profissional. Exemplo: se a profissional tem um evento das 9h às 11h, um serviço de 2h só pode começar às 11h ou depois, ou terminar até as 9h.\n   - Antes de oferecer cada opção, compare com cada evento do mesmo profissional naquele dia, um por um. Exemplo: se a profissional tem um evento das 14h às 14h45, um serviço de 3h começando às 13h (13h às 16h) não cabe.\n   - Se o cliente pedir um horário específico, faça essa mesma conferência antes de aceitar.\n4. Quando o cliente escolher: se o e-mail cadastrado for conhecido, pergunte se pode mandar o convite para ele. Se não for, peça o e-mail.\n5. Repita o resumo (nome, serviço, profissional, dia, hora, preço, e-mail) e peça confirmação.\n6. Só depois do \"sim\", use a ferramenta \"criar_agendamento\" com a duração correta do serviço. Em seguida, use \"registrar_agendamento\" com o id do evento que \"criar_agendamento\" devolveu.\n7. Confirme o agendamento e avise que o convite chegou por e-mail.\n\nCADASTRO DO CLIENTE\n- Sempre que o cliente informar ou corrigir o nome ou o e-mail, use \"salvar_cliente\".\n\nREMARCAR OU CANCELAR\n- Use somente a lista \"Próximos agendamentos deste cliente\". Nunca mexa em nenhum outro agendamento.\n- Se houver mais de um agendamento, pergunte qual.\n- Lembre a política de cancelamento e remarcação, mas não recuse o pedido por causa dela.\n- Cancelar: confirme com o cliente, use \"cancelar_agendamento\" com o id da lista e depois \"cancelar_na_agenda\" com o google_event_id que ele devolver.\n- Remarcar: ofereça novos horários como no passo 3, confirme, use \"remarcar_agendamento\" com o id da lista e o novo início e fim, e depois \"remarcar_na_agenda\" com o google_event_id que ele devolver.\n- Se a ferramenta devolver \"erro\" ou não houver google_event_id, diga que não encontrou o agendamento e ofereça chamar a equipe.\n\nCHAMAR A EQUIPE\n- Chame a equipe quando o cliente pedir para falar com uma pessoa, fizer uma reclamação ou quando você não conseguir resolver.\n- Use \"avisar_equipe\" com um resumo curto do pedido e depois \"pausar_atendimento\".\n- Diga ao cliente que alguém da equipe vai responder por aqui em breve.\n- Se \"avisar_equipe\" der erro, diga que a equipe vai entrar em contato assim que possível.\n\nREGRAS GERAIS\n- Use somente as INFORMAÇÕES DO NEGÓCIO. Se a resposta não estiver lá, diga que não sabe e ofereça chamar a equipe.\n- Nunca invente serviço, preço ou horário.\n- Privacidade: nunca mostre, cite ou pergunte sobre agendamentos de outros clientes.\n- Nunca mostre ids ao cliente.\n- Não responda assuntos fora do negócio. Diga educadamente que só ajuda com atendimentos do {{ $('Montar contexto').item.json.nome_negocio }}.\n- Não prometa resultados.\n\nREGRAS ESPECÍFICAS DESTE NEGÓCIO\n{{ $('Montar contexto').item.json.regras_especificas }}\n\nFORMATO DAS RESPOSTAS\n- Português do Brasil, tom {{ $('Montar contexto').item.json.tom }}.\n- Mensagens curtas, de no máximo 4 linhas, como em um chat de WhatsApp.\n- Horários no formato \"terça, 28/10 às 14h\".\n- Título do evento: \"<Serviço> - <Profissional> - <Nome do cliente>\".\n\nINFORMAÇÕES DO NEGÓCIO\n{{ $('Montar contexto').item.json.base_conhecimento }}"
         }
       },
       "id": "b5005c2e-0964-41be-9196-0521e57a760e",
@@ -329,6 +329,182 @@
         1568,
         0
       ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Salva o nome e/ou o e-mail do cliente no cadastro. Use sempre que o cliente informar ou corrigir esses dados.",
+        "method": "POST",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/salvar_cliente",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_salao_id: $('Montar contexto').item.json.salao_id, p_telefone: $('Ler mensagem').item.json.numero, p_nome: $fromAI('nome', 'Nome do cliente, ou vazio se não mudou', 'string'), p_email: $fromAI('email', 'E-mail do cliente, ou vazio se não mudou', 'string') }) }}",
+        "options": {}
+      },
+      "id": "2f6a8c1e-3b4d-4e5f-8a9b-0c1d2e3f4a51",
+      "name": "salvar_cliente",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Registra no sistema do salão um atendimento que acabou de ser criado na agenda. Use logo depois de \"criar_agendamento\".",
+        "method": "POST",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/registrar_agendamento",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_salao_id: $('Montar contexto').item.json.salao_id, p_telefone: $('Ler mensagem').item.json.numero, p_servico: $fromAI('servico', 'Nome do serviço, igual às INFORMAÇÕES DO NEGÓCIO', 'string'), p_profissional: $fromAI('profissional', 'Nome do profissional', 'string'), p_inicio: $fromAI('inicio', 'Início no formato ISO 8601 com fuso, ex.: 2026-10-25T14:00:00-03:00', 'string'), p_fim: $fromAI('fim', 'Fim no formato ISO 8601 com fuso', 'string'), p_google_event_id: $fromAI('google_event_id', 'Campo id do evento devolvido por criar_agendamento', 'string'), p_observacoes: $fromAI('observacoes', 'Resumo do pedido do cliente e observações da triagem', 'string') }) }}",
+        "options": {}
+      },
+      "id": "3a7b9d2f-4c5e-4f60-9bac-1d2e3f4a5b62",
+      "name": "registrar_agendamento",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Cancela um agendamento do próprio cliente no sistema do salão e devolve o google_event_id. Use só depois que o cliente confirmar o cancelamento.",
+        "method": "POST",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/cancelar_agendamento",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_salao_id: $('Montar contexto').item.json.salao_id, p_telefone: $('Ler mensagem').item.json.numero, p_agendamento_id: $fromAI('agendamento_id', 'id do agendamento na lista de próximos agendamentos do cliente', 'string') }) }}",
+        "options": {}
+      },
+      "id": "4b8cae30-5d6f-4071-acbd-2e3f4a5b6c73",
+      "name": "cancelar_agendamento",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1260,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Muda o dia e a hora de um agendamento do próprio cliente no sistema do salão e devolve o google_event_id. Use só depois que o cliente confirmar o novo horário.",
+        "method": "POST",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/remarcar_agendamento",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_salao_id: $('Montar contexto').item.json.salao_id, p_telefone: $('Ler mensagem').item.json.numero, p_agendamento_id: $fromAI('agendamento_id', 'id do agendamento na lista de próximos agendamentos do cliente', 'string'), p_inicio: $fromAI('inicio', 'Novo início no formato ISO 8601 com fuso, ex.: 2026-10-25T14:00:00-03:00', 'string'), p_fim: $fromAI('fim', 'Novo fim (início + duração do serviço) no formato ISO 8601 com fuso', 'string') }) }}",
+        "options": {}
+      },
+      "id": "5c9dbf41-6e70-4182-bdce-3f4a5b6c7d84",
+      "name": "remarcar_agendamento",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1420,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Apaga da agenda o evento de um agendamento cancelado e avisa o cliente por e-mail. Use logo depois de \"cancelar_agendamento\".",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Montar contexto').item.json.calendar_id }}"
+        },
+        "eventId": "={{ $fromAI('google_event_id', 'google_event_id devolvido por cancelar_agendamento', 'string') }}",
+        "options": {
+          "sendUpdates": "all"
+        }
+      },
+      "id": "6daec052-7f81-4293-cedf-4a5b6c7d8e95",
+      "name": "cancelar_na_agenda",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1580,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Muda na agenda o dia e a hora do evento de um agendamento remarcado e avisa o cliente por e-mail. Use logo depois de \"remarcar_agendamento\".",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Montar contexto').item.json.calendar_id }}"
+        },
+        "eventId": "={{ $fromAI('google_event_id', 'google_event_id devolvido por remarcar_agendamento', 'string') }}",
+        "updateFields": {
+          "start": "={{ $fromAI('inicio', 'Novo início no formato ISO 8601 com fuso, ex.: 2026-10-25T14:00:00-03:00', 'string') }}",
+          "end": "={{ $fromAI('fim', 'Novo fim (início + duração do serviço) no formato ISO 8601 com fuso', 'string') }}",
+          "sendUpdates": "all"
+        }
+      },
+      "id": "7ebfd163-8092-43a4-d0e0-5b6c7d8e9fa6",
+      "name": "remarcar_na_agenda",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1740,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Manda uma mensagem no WhatsApp do responsável pelo salão pedindo que uma pessoa assuma a conversa com este cliente.",
+        "method": "POST",
+        "url": "={{ $('Config').item.json.evolution_url }}/message/sendText/{{ $('Ler mensagem').item.json.instancia }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $('Montar contexto').item.json.whatsapp_responsavel, text: 'Atendimento humano - ' + $('Montar contexto').item.json.nome_negocio + '\\nCliente: ' + ($('Montar contexto').item.json.cliente_nome || $('Ler mensagem').item.json.nome_whatsapp || 'sem nome') + ' (' + $('Ler mensagem').item.json.numero + ')\\nPedido: ' + $fromAI('resumo', 'Resumo curto do que o cliente precisa', 'string') }) }}",
+        "options": {}
+      },
+      "id": "8fc0e274-91a3-44b5-e1f1-6c7d8e9fa0b7",
+      "name": "avisar_equipe",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1900,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Pausa as respostas automáticas para este cliente por 12 horas, para uma pessoa da equipe assumir. Use logo depois de \"avisar_equipe\".",
+        "method": "POST",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/pausar_atendimento",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_salao_id: $('Montar contexto').item.json.salao_id, p_telefone: $('Ler mensagem').item.json.numero }) }}",
+        "options": {}
+      },
+      "id": "90d1f385-a2b4-45c6-f202-7d8e9fa0b1c8",
+      "name": "pausar_atendimento",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2060,
+        260
+      ]
     }
   ],
   "connections": {
@@ -443,6 +619,94 @@
       ]
     },
     "criar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "salvar_cliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remarcar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_na_agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remarcar_na_agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "avisar_equipe": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pausar_atendimento": {
       "ai_tool": [
         [
           {

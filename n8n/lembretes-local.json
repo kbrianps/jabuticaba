@@ -1,0 +1,212 @@
+{
+  "name": "Lembretes (Jabuticaba)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-4a00-8000-000000000001",
+      "name": "Todo dia às 18h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "lc-supabase_url",
+              "name": "supabase_url",
+              "value": "https://dhtumvumreirkterjwak.supabase.co",
+              "type": "string"
+            },
+            {
+              "id": "lc-evolution_url",
+              "name": "evolution_url",
+              "value": "http://evolution:8080",
+              "type": "string"
+            },
+            {
+              "id": "lc-numero_teste",
+              "name": "numero_teste",
+              "value": "5521988111260",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-4a00-8000-000000000002",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.supabase_url }}/rest/v1/rpc/lembretes_pendentes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4a00-8000-000000000003",
+      "name": "Agendamentos de amanhã",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.telefone }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "={{ $('Config').item.json.numero_teste }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4a00-8000-000000000004",
+      "name": "Só o número de teste",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.evolution_url }}/message/sendText/{{ $json.instancia }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $json.telefone, text: 'Oi' + ($json.cliente ? ', ' + $json.cliente.split(' ')[0] : '') + '! Aqui é a ' + $json.nome_assistente + ' do ' + $json.nome_negocio + '. Passando para lembrar do seu horário amanhã (' + $json.data + ') às ' + $json.hora + ': ' + ($json.servico || 'atendimento') + ($json.profissional ? ' com ' + $json.profissional : '') + '. Se precisar remarcar ou cancelar, é só responder aqui.' }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-4a00-8000-000000000005",
+      "name": "Enviar lembrete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.supabase_url }}/rest/v1/rpc/marcar_lembrete",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_agendamento_id: $('Só o número de teste').item.json.id }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0006-4a00-8000-000000000006",
+      "name": "Marcar como enviado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Todo dia às 18h": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Agendamentos de amanhã",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamentos de amanhã": {
+      "main": [
+        [
+          {
+            "node": "Só o número de teste",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Só o número de teste": {
+      "main": [
+        [
+          {
+            "node": "Enviar lembrete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar lembrete": {
+      "main": [
+        [
+          {
+            "node": "Marcar como enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -65,3 +65,13 @@ Do celular 98811-1260, mande "oi" para o 97181-7100. A Jabu deve responder em po
 | Erro de conexão em "Responder no WhatsApp" | O endereço do túnel mudou. Ele muda toda vez que o Docker reinicia: rode `docker compose logs tunel` e atualize o Config. |
 | O QR Code não aparece | Rode `docker compose restart evolution` e tente de novo. |
 | Desligar tudo | `docker compose down` (a conexão do WhatsApp fica salva). |
+
+## n8n local (grátis)
+
+O mesmo `docker-compose.yml` também sobe o n8n self-hosted (imagem oficial `docker.n8n.io/n8nio/n8n`), na mesma rede da Evolution. Assim a Evolution chama o n8n pelo nome `n8n`, sem túnel.
+
+- Subir tudo: `docker compose up -d`. Só o n8n: `docker compose up -d n8n`.
+- Parar: `docker compose stop n8n` (ou `docker compose down` para tudo). Os fluxos ficam salvos no volume `n8n_data`.
+- Abrir: http://localhost:5678. No primeiro acesso, crie a conta de dono local (fica só no seu computador).
+- No `.env`, use `WEBHOOK_GLOBAL_URL=http://n8n:5678/webhook/jabuticaba-whatsapp` para a Evolution mandar as mensagens para o n8n local.
+- No fluxo, o campo `evolution_url` do Config passa a ser `http://evolution:8080` (sem túnel).

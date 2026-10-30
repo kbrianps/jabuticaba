@@ -37,7 +37,21 @@ services:
     depends_on:
       - evolution
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.45.7
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      TZ: America/Sao_Paulo
+      N8N_SECURE_COOKIE: "false"
+      N8N_RUNNERS_ENABLED: "true"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
 volumes:
   evolution_instances:
   postgres_data:
   redis_data:
+  n8n_data:

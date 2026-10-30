@@ -185,4 +185,15 @@ grant execute on function
   marcar_lembrete(uuid)
 to service_role;
 
+-- Fixa o search_path para ninguém trocar as tabelas usadas pelas funções.
+alter function contexto_salao(text) set search_path = public;
+alter function iniciar_conversa(text, text) set search_path = public;
+alter function salvar_cliente(uuid, text, text, text) set search_path = public;
+alter function registrar_agendamento(uuid, text, text, text, timestamptz, timestamptz, text, text) set search_path = public;
+alter function cancelar_agendamento(uuid, text, uuid) set search_path = public;
+alter function remarcar_agendamento(uuid, text, uuid, timestamptz, timestamptz) set search_path = public;
+alter function pausar_atendimento(uuid, text) set search_path = public;
+alter function lembretes_pendentes() set search_path = public;
+alter function marcar_lembrete(uuid) set search_path = public;
+
 notify pgrst, 'reload schema';

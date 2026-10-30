@@ -74,6 +74,10 @@ create table if not exists agendamentos (
 );
 
 create index if not exists agendamentos_salao_inicio on agendamentos (salao_id, inicio);
+create index if not exists agendamentos_cliente on agendamentos (cliente_id);
+create index if not exists agendamentos_servico on agendamentos (servico_id);
+create index if not exists agendamentos_profissional on agendamentos (profissional_id);
+create index if not exists servico_profissionais_profissional on servico_profissionais (profissional_id);
 
 alter table saloes enable row level security;
 alter table profissionais enable row level security;

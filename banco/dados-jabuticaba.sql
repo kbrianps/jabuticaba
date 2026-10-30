@@ -64,4 +64,7 @@ join (values
 where s.evolution_instancia = 'jabuticaba'
 on conflict do nothing;
 
+-- Política do salão: cancelar ou remarcar com 24 horas de antecedência.
+update saloes set antecedencia_minima_horas = 24 where evolution_instancia = 'jabuticaba';
+
 select contexto_salao('jabuticaba');
